@@ -13,7 +13,7 @@ process = cms.Process("L1TrackNtuple")
 ############################################################
 
 GEOMETRY = "D49"
-L1TRKALGO = 'HYBRID_QUALITY'  # L1 tracking algorithm: 'HYBRID' (baseline, 4par fit) or 'HYBRID_DISPLACED' (extended, 5par fit)
+L1TRKALGO = 'HYBRID'  # L1 tracking algorithm: 'HYBRID' (baseline, 4par fit) or 'HYBRID_DISPLACED' (extended, 5par fit)
 
 WRITE_DATA = False
 
@@ -48,7 +48,6 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
 # input and output
 ############################################################
 
-
 options = VarParsing.VarParsing ('Analysis')
 
 options.parseArguments()
@@ -61,12 +60,16 @@ for filePath in options.inputFiles:
     else:
         inputFiles += FileUtils.loadListFromFile(filePath)
 
-############################################################
-# input and output
-############################################################
-
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(options.maxEvents) )
+
+    
+process.source = cms.Source ("PoolSource",
+                            fileNames = cms.untracked.vstring(inputFiles),
+                            secondaryFileNames = cms.untracked.vstring(),
+                            # skipEvents = cms.untracked.uint32(500)
+                            )
+
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string('TTbar_PU200_'+GEOMETRY+'.root'), closeFileFast = cms.untracked.bool(True))
 process.Timing = cms.Service("Timing", summaryOnly = cms.untracked.bool(True))
@@ -89,6 +92,9 @@ process.Timing = cms.Service("Timing", summaryOnly = cms.untracked.bool(True))
 ############################################################
 # L1 tracking
 ############################################################
+process.load("L1Trigger.TrackTrigger.L1TrackClassifier_cfi")
+process.TrackQualityParams.Quality_Algorithm = cms.string("NN")
+
 
 process.load("L1Trigger.TrackFindingTracklet.L1HybridEmulationTracks_cff")
 
@@ -109,14 +115,6 @@ elif (L1TRKALGO == 'HYBRID_DISPLACED'):
     L1TRK_NAME  = "TTTracksFromExtendedTrackletEmulation"
     L1TRK_LABEL = "Level1TTTracks"
     L1TRUTH_NAME = "TTTrackAssociatorFromPixelDigisExtended"
-
-elif (L1TRKALGO == "HYBRID_QUALITY"):
-    process.TTTracksEmulation = cms.Path(process.L1HybridTracksWithQuality)
-    process.TTTracksEmulationWithTruth = cms.Path(process.L1HybridTracksWithAssociatorsWithQuality)
-    NHELIXPAR = 4
-    L1TRK_NAME  = "TTTracksFromTrackletEmulationWithQuality"
-    L1TRK_LABEL = "Level1TTTracks"
-    L1TRUTH_NAME = "TTTrackAssociatorFromPixelDigisWithQuality"
     
 # LEGACY ALGORITHM (EXPERTS ONLY): TRACKLET  
 elif (L1TRKALGO == 'TRACKLET'):
@@ -149,6 +147,8 @@ elif (L1TRKALGO == 'TMTT'):
 else:
     print "ERROR: Unknown L1TRKALGO option"
     exit(1)
+
+
 
 ############################################################
 # Define the track ntuple process, MyProcess is the (unsigned) PDGID corresponding to the process which is run
@@ -218,4 +218,5 @@ if (WRITE_DATA):
 
   process.pd = cms.EndPath(process.writeDataset)
   process.schedule.append(process.pd)
+
 
