@@ -84,7 +84,7 @@ process.Timing = cms.Service("Timing", summaryOnly = cms.untracked.bool(True))
 ############################################################
 # L1 tracking
 ############################################################
-process.load("L1Trigger.TrackTrigger.LTrackClassifier_cfi")
+process.load("L1Trigger.TrackTrigger.L1TrackClassifier_cfi")
 process.TrackQualityParams.Quality_Algorithm = cms.string("NN")
 
 
