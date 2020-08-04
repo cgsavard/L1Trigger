@@ -86,7 +86,7 @@ process.Timing = cms.Service("Timing", summaryOnly = cms.untracked.bool(True))
 ############################################################
 process.load("L1Trigger.TrackTrigger.L1TrackClassifier_cfi")
 process.TrackQualityParams.Quality_Algorithm = cms.string("NN")
-
+process.TrackQualityParams.ONNXmodel = cms.string("/afs/cern.ch/user/c/cebrown/private/CMSSW/CMSSW_11_2_0_pre2/src/L1Trigger/TrackTrigger/ML_data/FakeIDNN/NN_model.onnx")
 
 process.load("L1Trigger.TrackFindingTracklet.L1HybridEmulationTracks_cff")
 
