@@ -189,7 +189,7 @@ void L1TrackMVAPlot(TString type,
   vector<float> FPR;
   int n = 30; //num of entries on ROC curve
   for (int i=0; i<n; i++){
-    float dt = (float)i/n;
+    float dt = (float)i/(n-1);
     int TP = 0;
     int FP = 0;
     int P = 0;
@@ -207,9 +207,15 @@ void L1TrackMVAPlot(TString type,
     FPR.push_back((float)FP/N);
   }
 
+  float AUC = 0.0;
+  for (int i=0; i<n-1; i++){
+    AUC += (TPR[i]+TPR[i+1])/2*(FPR[i]-FPR[i+1]);
+  }
+  cout << AUC << endl;
+
   TGraph* ROC = new TGraph(n, FPR.data(), TPR.data());
   ROC->SetName("ROC_MVA1");
-  ROC->SetTitle("ROC curve; FPR; TPR");
+  ROC->SetTitle(("ROC curve (AUC = "+to_string(AUC)+"); FPR; TPR").c_str());  
 
   // -------------------------------------------------------------------------------------------
   // create TPR vs. eta and FPR vs. eta
@@ -223,6 +229,7 @@ void L1TrackMVAPlot(TString type,
   float eta_low = -3.5;
   float eta_high = 3.5;
   float eta_temp = eta_low;
+  float eta_step = (eta_high-eta_low)/n;
   float dt = .5;
   while (eta_temp<eta_high){
     int TP = 0;
@@ -230,7 +237,7 @@ void L1TrackMVAPlot(TString type,
     int P = 0;
     int N = 0;
     for (int k=0; k<etas.size(); k++){
-      if (etas.at(k)>eta_temp && etas.at(k)<=(eta_temp+(eta_high-eta_low)/n)){
+      if (etas.at(k)>eta_temp && etas.at(k)<=(eta_temp+eta_step)){
 	if (fakes.at(k)){
 	  P++;
 	  if (MVA1s.at(k)>dt) TP++;
@@ -242,12 +249,12 @@ void L1TrackMVAPlot(TString type,
     }
     if (P>0){
       TPR_eta.push_back((float)TP/P);
-      eta_range_TPR.push_back(eta_temp);
+      eta_range_TPR.push_back(eta_temp+eta_step/2); //halfway in bin
     }if (N>0){
       FPR_eta.push_back((float)FP/N);
-      eta_range_FPR.push_back(eta_temp);
+      eta_range_FPR.push_back(eta_temp+eta_step/2); //halfway in bin
     }
-    eta_temp += (eta_high-eta_low)/n;
+    eta_temp += eta_step;
   }
 
   TGraph* TPR_vs_eta = new TGraph(TPR_eta.size(), eta_range_TPR.data(), TPR_eta.data());
@@ -270,6 +277,7 @@ void L1TrackMVAPlot(TString type,
   float pt_low = 2;
   float pt_high = 100;
   float pt_temp = pt_low;
+  float pt_step = (pt_high-pt_low)/n;
   dt = .5;
   while (pt_temp<pt_high){
     int TP = 0;
@@ -277,7 +285,7 @@ void L1TrackMVAPlot(TString type,
     int P = 0;
     int N = 0;
     for (int k=0; k<pts.size(); k++){
-      if (pts.at(k)>pt_temp && pts.at(k)<=(pt_temp+(pt_high-pt_low)/n)){
+      if (pts.at(k)>pt_temp && pts.at(k)<=(pt_temp+pt_step)){
 	if (fakes.at(k)){
 	  P++;
 	  if (MVA1s.at(k)>dt) TP++;
@@ -289,12 +297,12 @@ void L1TrackMVAPlot(TString type,
     }
     if (P>0){
       TPR_pt.push_back((float)TP/P);
-      pt_range_TPR.push_back(pt_temp);
+      pt_range_TPR.push_back(pt_temp+pt_step/2); //halfway in bin
     }if (N>0){
       FPR_pt.push_back((float)FP/N);
-      pt_range_FPR.push_back(pt_temp);
+      pt_range_FPR.push_back(pt_temp+pt_step/2); //halfway in bin
     }
-    pt_temp += (pt_high-pt_low)/n;
+    pt_temp += pt_step;
   }
 
   TGraph* TPR_vs_pt = new TGraph(TPR_pt.size(), pt_range_TPR.data(), TPR_pt.data());
