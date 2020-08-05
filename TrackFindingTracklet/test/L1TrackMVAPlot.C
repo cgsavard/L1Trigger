@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
@@ -207,11 +208,11 @@ void L1TrackMVAPlot(TString type,
     FPR.push_back((float)FP/N);
   }
 
+  // calculate AUC
   float AUC = 0.0;
   for (int i=0; i<n-1; i++){
     AUC += (TPR[i]+TPR[i+1])/2*(FPR[i]-FPR[i+1]);
   }
-  cout << AUC << endl;
 
   TGraph* ROC = new TGraph(n, FPR.data(), TPR.data());
   ROC->SetName("ROC_MVA1");
@@ -229,7 +230,7 @@ void L1TrackMVAPlot(TString type,
   float eta_low = -3.5;
   float eta_high = 3.5;
   float eta_temp = eta_low;
-  float eta_step = (eta_high-eta_low)/n;
+  float eta_step = (eta_high-eta_low)/(n-1);
   float dt = .5;
   while (eta_temp<eta_high){
     int TP = 0;
@@ -274,18 +275,18 @@ void L1TrackMVAPlot(TString type,
   vector<float> pt_range_TPR;
   vector<float> pt_range_FPR;
   n = 10;
-  float pt_low = 2;
-  float pt_high = 100;
-  float pt_temp = pt_low;
-  float pt_step = (pt_high-pt_low)/n;
+  float logpt_low = log10(2); //set low pt in log
+  float logpt_high = log10(100); //set high pt in log
+  float logpt_temp = logpt_low;
+  float logpt_step = (logpt_high-logpt_low)/(n-1);
   dt = .5;
-  while (pt_temp<pt_high){
+  while (logpt_temp<logpt_high){
     int TP = 0;
     int FP = 0;
     int P = 0;
     int N = 0;
     for (int k=0; k<pts.size(); k++){
-      if (pts.at(k)>pt_temp && pts.at(k)<=(pt_temp+pt_step)){
+      if (pts.at(k)>pow(10,logpt_temp) && pts.at(k)<=(pow(10,logpt_temp+logpt_step))){
 	if (fakes.at(k)){
 	  P++;
 	  if (MVA1s.at(k)>dt) TP++;
@@ -294,15 +295,15 @@ void L1TrackMVAPlot(TString type,
 	  if (MVA1s.at(k)>dt) FP++;
 	}
       }
-    }
+      }
     if (P>0){
       TPR_pt.push_back((float)TP/P);
-      pt_range_TPR.push_back(pt_temp+pt_step/2); //halfway in bin
+      pt_range_TPR.push_back((pow(10,logpt_temp)+pow(10,logpt_temp+logpt_step))/2); //halfway in bin
     }if (N>0){
       FPR_pt.push_back((float)FP/N);
-      pt_range_FPR.push_back(pt_temp+pt_step/2); //halfway in bin
+      pt_range_FPR.push_back((pow(10,logpt_temp)+pow(10,logpt_temp+logpt_step))/2); //halfway in bin
     }
-    pt_temp += pt_step;
+    logpt_temp += logpt_step;
   }
 
   TGraph* TPR_vs_pt = new TGraph(TPR_pt.size(), pt_range_TPR.data(), TPR_pt.data());
