@@ -1,3 +1,9 @@
+/*
+Track Quality Header file
+
+C.Brown 28/07/20
+*/
+
 #ifndef L1Trigger_TrackTrigger_interface_Quality_h
 #define L1Trigger_TrackTrigger_interface_Quality_h
 
@@ -25,7 +31,10 @@
 
 class Quality{
   public:
+    //Default Constructor
     Quality();
+
+    //Overloaded Constructors depending on how the Quality class is being initiated
     Quality(std::string Algorithm,
             std::string ONNXmodel,
             std::string ONNXInputName,
@@ -44,21 +53,28 @@ class Quality{
 
     Quality(edm::ParameterSet Params);
 
+    //Default Destructor
     ~Quality() = default;
-
-    std::vector<float> Feature_Transform(TTTrack <Ref_Phase2TrackerDigi_> aTrack, 
-					 std::vector<std::string> in_features);
     
+    // Controls the conversion between TTTrack features and ML model training features
+    std::vector<float> Feature_Transform(TTTrack <Ref_Phase2TrackerDigi_> aTrack, 
+					                               std::vector<std::string> in_features);
+    
+    // Passed by reference a track without MVA filled, fills the track's MVA field
     void Prediction(TTTrack <Ref_Phase2TrackerDigi_> &aTrack);
-
+    
+    // To set private member data
     void Set_Cut_Parameters(std::string Algorithm,float maxZ0, float maxEta, float chi2dofMax, float bendchi2Max, 
 			    float minPt, int nStubmin);
+
     void Set_ONNX_Model(std::string Algorithm, std::string ONNXmodel, std::string ONNXInputName,
 			std::string ONNXOutputName, std::vector<std::string> in_features);
 
 
 
+
   private:
+    // Private Memember Data
     std::string Algorithm_ = "None";
     std::string ONNXmodel_;
     std::string ONNXInputName_;

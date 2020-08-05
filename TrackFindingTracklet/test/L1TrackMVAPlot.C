@@ -48,7 +48,8 @@ void L1TrackMVAPlot(TString type,
   gROOT->SetBatch();
   gErrorIgnoreLevel = kWarning;
 
-  //SetPlotStyle();
+  SetPlotStyle();
+  TCanvas c;
 
   // ----------------------------------------------------------------------------------------------------------------
   // define input options
@@ -320,18 +321,23 @@ void L1TrackMVAPlot(TString type,
 
   ROC->Draw("ap");
   ROC->Write();
+  c.SaveAs("ROC.pdf");
 
   TPR_vs_eta->Draw("ap");
   TPR_vs_eta->Write();
+  c.SaveAs("TPR_vs_eta.pdf");
 
   FPR_vs_eta->Draw("ap");
   FPR_vs_eta->Write();
+  c.SaveAs("FPR_vs_eta.pdf");
 
   TPR_vs_pt->Draw("ap");
   TPR_vs_pt->Write();
+  c.SaveAs("TPR_vs_eta.pdf");
 
   FPR_vs_pt->Draw("ap");
   FPR_vs_pt->Write();
+  c.SaveAs("FPR_vs_eta.pdf");
 
   fout->Close();
 }

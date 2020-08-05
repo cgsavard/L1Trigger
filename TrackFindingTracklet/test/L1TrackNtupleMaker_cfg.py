@@ -84,6 +84,8 @@ process.Timing = cms.Service("Timing", summaryOnly = cms.untracked.bool(True))
 ############################################################
 # L1 tracking
 ############################################################
+
+# Load Quality params to change algorithm and model location
 process.load("L1Trigger.TrackTrigger.L1TrackClassifier_cfi")
 process.TrackQualityParams.Quality_Algorithm = cms.string("NN")
 process.TrackQualityParams.ONNXmodel = cms.string("/afs/cern.ch/user/c/cebrown/private/CMSSW/CMSSW_11_2_0_pre2/src/L1Trigger/TrackTrigger/ML_data/FakeIDNN/NN_model.onnx")
@@ -175,6 +177,7 @@ process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        # tracking in jets (--> requires AK4 genjet collection present!)
                                        TrackingInJets = cms.bool(False),
                                        GenJetInputTag = cms.InputTag("ak4GenJets", ""),
+                                       # Was track quality performed?
                                        TrackQuality = cms.bool(True)
                                        )
 

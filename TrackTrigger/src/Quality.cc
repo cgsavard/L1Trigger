@@ -1,6 +1,14 @@
+/*
+Track Quality Body file
+
+C.Brown & C.Savard 07/2020
+*/
+
 #include "L1Trigger/TrackTrigger/interface/Quality.h"
 
 using namespace std;
+
+//Constructors
 
 Quality::Quality() {}
 
@@ -21,11 +29,12 @@ Quality::Quality(string Algorithm,
                  float bendchi2Max,
                  float minPt,
                  int nStubsmin) {
-                Set_Cut_Parameters(Algorithm,maxZ0,maxEta,chi2dofMax,bendchi2Max,minPt,nStubsmin);   
-            }
+                   Set_Cut_Parameters(Algorithm,maxZ0,maxEta,chi2dofMax,bendchi2Max,minPt,nStubsmin);   
+                }
 
 Quality::Quality(edm::ParameterSet Params){
     string Algorithm = Params.getParameter<string>("Quality_Algorithm");
+    // Unpacks EDM parameter set itself to save unecessary processing within TrackProducers
     if (Algorithm == "Cut"){
         Set_Cut_Parameters(Algorithm,
                            (float)Params.getParameter<double>("maxZ0"),
@@ -188,7 +197,7 @@ vector<float> Quality::Feature_Transform(TTTrack < Ref_Phase2TrackerDigi_ > aTra
     
 void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
     if (this->Algorithm_ == "Cut"){
-
+        // Get Track parameters
         float trk_pt = aTrack.momentum().perp();
         float trk_bend_chi2 = aTrack.stubPtConsistency();
         float trk_z0 = aTrack.z0();
@@ -211,6 +220,7 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
     }
 
     else {
+            // Setup ONNX input and output names and arrays
             vector<string> ortinput_names;
             vector<string> ortoutput_names;
             cms::Ort::FloatArrays ortinput;

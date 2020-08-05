@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.py": "python",
+        "L1TrackMVAPlot.C": "cpp"
+    }
+}
