@@ -188,7 +188,7 @@ void L1TrackMVAPlot(TString type,
 
   vector<float> TPR;
   vector<float> FPR;
-  int n = 50; //num of entries on ROC curve
+  int n = 100; //num of entries on ROC curve
   for (int i=0; i<n; i++){
     float dt = (float)i/(n-1); //make sure it starts at (0,0) and ends at (1,1)
     int TP = 0;
@@ -232,7 +232,7 @@ void L1TrackMVAPlot(TString type,
   float eta_temp = eta_low;
   float eta_step = (eta_high-eta_low)/n;
   float dt = .5;
-  while (eta_temp<eta_high){
+  for (int ct=0; ct<n; ct++){
     int TP = 0;
     int FP = 0;
     int P = 0;
@@ -276,17 +276,17 @@ void L1TrackMVAPlot(TString type,
   // create TPR vs. pt and FPR vs. pt
   // -------------------------------------------------------------------------------------------
 
-  vector<float> TPR_pt;
-  vector<float> FPR_pt;
-  vector<float> pt_range_TPR;
-  vector<float> pt_range_FPR;
+  vector<float> TPR_pt, TPR_pt_err;
+  vector<float> FPR_pt, FPR_pt_err;
+  vector<float> pt_range_TPR, pt_range_TPR_err;
+  vector<float> pt_range_FPR, pt_range_FPR_err;
   n = 10;
   float logpt_low = log10(2); //set low pt in log
   float logpt_high = log10(100); //set high pt in log
   float logpt_temp = logpt_low;
   float logpt_step = (logpt_high-logpt_low)/n;
   dt = .5;
-  while (logpt_temp<logpt_high){
+  for (int ct=0; ct<n; ct++){
     int TP = 0;
     int FP = 0;
     int P = 0;
@@ -304,21 +304,27 @@ void L1TrackMVAPlot(TString type,
       }
     if (P>0){
       TPR_pt.push_back((float)TP/P);
+      TPR_pt_err.push_back(sqrt(TP*(P-TP)/pow(P,3)));
       pt_range_TPR.push_back((pow(10,logpt_temp)+pow(10,logpt_temp+logpt_step))/2); //halfway in bin
+      pt_range_TPR_err.push_back((pow(10,logpt_temp+logpt_step)-pow(10,logpt_temp))/2);
     }if (N>0){
       FPR_pt.push_back((float)FP/N);
+      FPR_pt_err.push_back(sqrt(FP*(N-FP)/pow(N,3)));
       pt_range_FPR.push_back((pow(10,logpt_temp)+pow(10,logpt_temp+logpt_step))/2); //halfway in bin
+      pt_range_FPR_err.push_back((pow(10,logpt_temp+logpt_step)-pow(10,logpt_temp))/2);
     }
     logpt_temp += logpt_step;
   }
 
-  TGraph* TPR_vs_pt = new TGraph(TPR_pt.size(), pt_range_TPR.data(), TPR_pt.data());
+  TGraphErrors* TPR_vs_pt = new TGraphErrors(TPR_pt.size(), pt_range_TPR.data(), TPR_pt.data(),
+					     pt_range_TPR_err.data(), TPR_pt_err.data());
   TPR_vs_pt->SetName("TPR_vs_pt_MVA1");
-  TPR_vs_pt->SetTitle("TPR vs. p_T; p_T; TPR");
+  TPR_vs_pt->SetTitle("TPR vs. p_{T}; p_{T}; TPR");
 
-  TGraph* FPR_vs_pt = new TGraph(FPR_pt.size(), pt_range_FPR.data(), FPR_pt.data());
+  TGraphErrors* FPR_vs_pt = new TGraphErrors(FPR_pt.size(), pt_range_FPR.data(), FPR_pt.data(),
+					     pt_range_FPR_err.data(), FPR_pt_err.data());
   FPR_vs_pt->SetName("FPR_vs_pt_MVA1");
-  FPR_vs_pt->SetTitle("FPR vs. p_T; p_T; FPR");
+  FPR_vs_pt->SetTitle("FPR vs. p_{T}; p_{T}; FPR");
 
   // -------------------------------------------------------------------------------------------
   // output file for histograms and graphs
