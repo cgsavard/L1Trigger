@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 
@@ -189,7 +190,7 @@ void L1TrackMVAPlot(TString type,
   vector<float> FPR;
   int n = 30; //num of entries on ROC curve
   for (int i=0; i<n; i++){
-    float dt = (float)i/n;
+    float dt = (float)i/(n-1);
     int TP = 0;
     int FP = 0;
     int P = 0;
@@ -207,22 +208,29 @@ void L1TrackMVAPlot(TString type,
     FPR.push_back((float)FP/N);
   }
 
+  // calculate AUC
+  float AUC = 0.0;
+  for (int i=0; i<n-1; i++){
+    AUC += (TPR[i]+TPR[i+1])/2*(FPR[i]-FPR[i+1]);
+  }
+
   TGraph* ROC = new TGraph(n, FPR.data(), TPR.data());
   ROC->SetName("ROC_MVA1");
-  ROC->SetTitle("ROC curve; FPR; TPR");
+  ROC->SetTitle(("ROC curve (AUC = "+to_string(AUC)+"); FPR; TPR").c_str());  
 
   // -------------------------------------------------------------------------------------------
   // create TPR vs. eta and FPR vs. eta
   // -------------------------------------------------------------------------------------------
 
-  vector<float> TPR_eta;
-  vector<float> FPR_eta;
-  vector<float> eta_range_TPR;
-  vector<float> eta_range_FPR;
+  vector<float> TPR_eta, TPR_eta_err;
+  vector<float> FPR_eta, FPR_eta_err;
+  vector<float> eta_range_TPR, eta_range_TPR_err;
+  vector<float> eta_range_FPR, eta_range_FPR_err;
   n = 30;
   float eta_low = -3.5;
   float eta_high = 3.5;
   float eta_temp = eta_low;
+  float eta_step = (eta_high-eta_low)/(n-1);
   float dt = .5;
   while (eta_temp<eta_high){
     int TP = 0;
@@ -230,7 +238,7 @@ void L1TrackMVAPlot(TString type,
     int P = 0;
     int N = 0;
     for (int k=0; k<etas.size(); k++){
-      if (etas.at(k)>eta_temp && etas.at(k)<=(eta_temp+(eta_high-eta_low)/n)){
+      if (etas.at(k)>eta_temp && etas.at(k)<=(eta_temp+eta_step)){
 	if (fakes.at(k)){
 	  P++;
 	  if (MVA1s.at(k)>dt) TP++;
@@ -242,19 +250,25 @@ void L1TrackMVAPlot(TString type,
     }
     if (P>0){
       TPR_eta.push_back((float)TP/P);
-      eta_range_TPR.push_back(eta_temp);
+      TPR_eta_err.push_back(sqrt(TP*(P-TP)/pow(P,3)));
+      eta_range_TPR.push_back(eta_temp+eta_step/2); //halfway in bin
+      eta_range_TPR_err.push_back(eta_step/2);
     }if (N>0){
       FPR_eta.push_back((float)FP/N);
-      eta_range_FPR.push_back(eta_temp);
+      FPR_eta_err.push_back(sqrt(FP*(N-FP)/pow(N,3)));
+      eta_range_FPR.push_back(eta_temp+eta_step/2); //halfway in bin
+      eta_range_FPR_err.push_back(eta_step/2);
     }
-    eta_temp += (eta_high-eta_low)/n;
+    eta_temp += eta_step;
   }
 
-  TGraph* TPR_vs_eta = new TGraph(TPR_eta.size(), eta_range_TPR.data(), TPR_eta.data());
+  TGraphErrors* TPR_vs_eta = new TGraphErrors(TPR_eta.size(), eta_range_TPR.data(), TPR_eta.data(),
+  					      eta_range_TPR_err.data(), TPR_eta_err.data());
   TPR_vs_eta->SetName("TPR_vs_eta_MVA1");
   TPR_vs_eta->SetTitle("TPR vs. #eta; #eta; TPR");
 
-  TGraph* FPR_vs_eta = new TGraph(FPR_eta.size(), eta_range_FPR.data(), FPR_eta.data());
+  TGraphErrors* FPR_vs_eta = new TGraphErrors(FPR_eta.size(), eta_range_FPR.data(), FPR_eta.data(),
+					      eta_range_FPR_err.data(), FPR_eta_err.data());
   FPR_vs_eta->SetName("FPR_vs_eta_MVA1");
   FPR_vs_eta->SetTitle("FPR vs. #eta; #eta; FPR");
 
@@ -267,17 +281,18 @@ void L1TrackMVAPlot(TString type,
   vector<float> pt_range_TPR;
   vector<float> pt_range_FPR;
   n = 10;
-  float pt_low = 2;
-  float pt_high = 100;
-  float pt_temp = pt_low;
+  float logpt_low = log10(2); //set low pt in log
+  float logpt_high = log10(100); //set high pt in log
+  float logpt_temp = logpt_low;
+  float logpt_step = (logpt_high-logpt_low)/(n-1);
   dt = .5;
-  while (pt_temp<pt_high){
+  while (logpt_temp<logpt_high){
     int TP = 0;
     int FP = 0;
     int P = 0;
     int N = 0;
     for (int k=0; k<pts.size(); k++){
-      if (pts.at(k)>pt_temp && pts.at(k)<=(pt_temp+(pt_high-pt_low)/n)){
+      if (pts.at(k)>pow(10,logpt_temp) && pts.at(k)<=(pow(10,logpt_temp+logpt_step))){
 	if (fakes.at(k)){
 	  P++;
 	  if (MVA1s.at(k)>dt) TP++;
@@ -286,15 +301,15 @@ void L1TrackMVAPlot(TString type,
 	  if (MVA1s.at(k)>dt) FP++;
 	}
       }
-    }
+      }
     if (P>0){
       TPR_pt.push_back((float)TP/P);
-      pt_range_TPR.push_back(pt_temp);
+      pt_range_TPR.push_back((pow(10,logpt_temp)+pow(10,logpt_temp+logpt_step))/2); //halfway in bin
     }if (N>0){
       FPR_pt.push_back((float)FP/N);
-      pt_range_FPR.push_back(pt_temp);
+      pt_range_FPR.push_back((pow(10,logpt_temp)+pow(10,logpt_temp+logpt_step))/2); //halfway in bin
     }
-    pt_temp += (pt_high-pt_low)/n;
+    logpt_temp += logpt_step;
   }
 
   TGraph* TPR_vs_pt = new TGraph(TPR_pt.size(), pt_range_TPR.data(), TPR_pt.data());
