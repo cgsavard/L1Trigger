@@ -115,13 +115,13 @@ vector<float> Quality::Feature_Transform(TTTrack < Ref_Phase2TrackerDigi_ > aTra
           if (eta >= eta_bins[j] && eta < eta_bins[j+1]) // if track in eta bin
           {
               // Iterate through hitpattern binary
-              for (int k=0; k<6; k++)
+              for (int k=0; k<=6; k++)
                   // Fill expanded binary entries using the expected hitmap table positions 
                   hitpattern_expanded_binary[hitmap[j][k]] = hitpattern_binary[k];   
           }
         }
 
-    hitpattern_expanded_binary.pop_back(); //remove final unused bit
+    //hitpattern_expanded_binary.pop_back(); //remove final unused bit
     int tmp_trk_ltot = 0;
     //calculate number of layer hits
     for (int i=0; i<6; ++i)
