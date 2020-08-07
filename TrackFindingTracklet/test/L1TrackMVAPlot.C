@@ -148,6 +148,11 @@ void L1TrackMVAPlot(TString type,
 
   TH1F* h_trk_MVA1 = new TH1F("trk_MVA1", "; MVA1; L1 tracks", 50, 0, 1);
 
+  TH1F* h_trk_MVA1_real = new TH1F("trk_MVA1_real",";MVA1; L1 tracks", 50, 0, 1);
+  h_trk_MVA1_real->SetLineColor(1);
+  TH1F* h_trk_MVA1_fake = new TH1F("trk_MVA1_fake",";MVA1; L1 tracks", 50, 0, 1);
+  h_trk_MVA1_fake->SetLineColor(2);
+
   // ----------------------------------------------------------------------------------------------------------------
   //        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
   // ----------------------------------------------------------------------------------------------------------------
@@ -179,6 +184,8 @@ void L1TrackMVAPlot(TString type,
       pts.push_back(pt);
 
       h_trk_MVA1->Fill(MVA1);
+      if (fake==1.) h_trk_MVA1_real->Fill(MVA1);
+      else if (fake==0.) h_trk_MVA1_fake->Fill(MVA1);
     }
   }
 
@@ -340,7 +347,15 @@ void L1TrackMVAPlot(TString type,
   h_trk_MVA1->Draw();
   h_trk_MVA1->Write();
 
-  ROC->Draw("ap");
+  h_trk_MVA1_real->Draw();
+  h_trk_MVA1_fake->Draw("same");
+  TLegend* leg = new TLegend();
+  leg->AddEntry(h_trk_MVA1_real,"real","l");
+  leg->AddEntry(h_trk_MVA1_fake,"fake","l");
+  leg->Draw("same");
+  c.Write("trk_MVA1_rf");
+
+  ROC->Draw();
   ROC->Write();
   c.SaveAs("ROC.pdf");
 
