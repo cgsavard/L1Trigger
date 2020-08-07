@@ -188,9 +188,9 @@ void L1TrackMVAPlot(TString type,
 
   vector<float> TPR;
   vector<float> FPR;
-  int n = 30; //num of entries on ROC curve
+  int n = 50; //num of entries on ROC curve
   for (int i=0; i<n; i++){
-    float dt = (float)i/(n-1);
+    float dt = (float)i/(n-1); //make sure it starts at (0,0) and ends at (1,1)
     int TP = 0;
     int FP = 0;
     int P = 0;
@@ -226,11 +226,11 @@ void L1TrackMVAPlot(TString type,
   vector<float> FPR_eta, FPR_eta_err;
   vector<float> eta_range_TPR, eta_range_TPR_err;
   vector<float> eta_range_FPR, eta_range_FPR_err;
-  n = 30;
-  float eta_low = -3.5;
-  float eta_high = 3.5;
+  n = 20;
+  float eta_low = -2.4;
+  float eta_high = 2.4;
   float eta_temp = eta_low;
-  float eta_step = (eta_high-eta_low)/(n-1);
+  float eta_step = (eta_high-eta_low)/n;
   float dt = .5;
   while (eta_temp<eta_high){
     int TP = 0;
@@ -284,7 +284,7 @@ void L1TrackMVAPlot(TString type,
   float logpt_low = log10(2); //set low pt in log
   float logpt_high = log10(100); //set high pt in log
   float logpt_temp = logpt_low;
-  float logpt_step = (logpt_high-logpt_low)/(n-1);
+  float logpt_step = (logpt_high-logpt_low)/n;
   dt = .5;
   while (logpt_temp<logpt_high){
     int TP = 0;
