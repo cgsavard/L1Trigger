@@ -25,6 +25,7 @@
 #include "TMath.h"
 #include "TGraph.h"
 #include <TError.h>
+#include "TGraphPainter.h"
 
 #include <iostream>
 #include <string>
@@ -50,7 +51,6 @@ void L1TrackMVAPlot(TString type,
   gErrorIgnoreLevel = kWarning;
 
   SetPlotStyle();
-  TCanvas c;
 
   // ----------------------------------------------------------------------------------------------------------------
   // define input options
@@ -337,8 +337,8 @@ void L1TrackMVAPlot(TString type,
   // output file for histograms and graphs
   // -------------------------------------------------------------------------------------------
 
-  TFile* fout;
-  fout = new TFile(type_dir + "MVAoutput_" + type + treeName + ".root", "recreate");
+  TFile* fout = new TFile(type_dir + "MVAoutput_" + type + treeName + ".root", "recreate");
+  TCanvas c;
 
   // -------------------------------------------------------------------------------------------
   // draw and save plots
@@ -355,7 +355,7 @@ void L1TrackMVAPlot(TString type,
   leg->Draw("same");
   c.Write("trk_MVA1_rf");
 
-  ROC->Draw();
+  ROC->Draw("AL");
   ROC->Write();
   c.SaveAs("ROC.pdf");
 
@@ -421,7 +421,7 @@ void SetPlotStyle() {
   gStyle->SetTitleSize(0.05, "z");
 
   // use bold lines and markers
-  gStyle->SetMarkerStyle(20);
+  //gStyle->SetMarkerStyle(20);
   gStyle->SetMarkerSize(1.2);
   gStyle->SetHistLineWidth(2.);
   gStyle->SetLineStyleString(2, "[12 12]");
