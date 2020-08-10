@@ -186,7 +186,7 @@ vector<float> Quality::Feature_Transform(TTTrack < Ref_Phase2TrackerDigi_ > aTra
     feat_map["nlaymiss_interior"] = float(tmp_trk_nlaymiss_interior);
 
     // fill tensor with track params
-    for (std::string feat : in_features) 
+    for (std::string feat : in_features)
       transformed_features.push_back(feat_map[feat]);
 
     return transformed_features;
@@ -226,12 +226,13 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
             cms::Ort::FloatArrays ortinput;
             cms::Ort::FloatArrays ortoutputs;
 
-            ortinput_names.push_back(this->ONNXInputName_);
-            ortoutput_names.push_back(this->ONNXOutputName_);
+            //ortinput_names.push_back(this->ONNXInputName_);
+            //ortoutput_names.push_back(this->ONNXOutputName_);
 
             vector<float> Transformed_features = Feature_Transform(aTrack,this->in_features_);
             cms::Ort::ONNXRuntime Runtime(this->ONNXmodel_); //Setup ONNX runtime
-
+	    ortinput_names.push_back(this->ONNXInputName_);
+	    ortoutput_names = Runtime.getOutputNames();
 
             //ONNX runtime recieves a vector of vectors of floats so push back the input
             // vector of float to create a 1,1,21 ortinput
