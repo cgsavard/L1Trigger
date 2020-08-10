@@ -38,7 +38,6 @@ class Quality{
     Quality(std::string Algorithm,
             std::string ONNXmodel,
             std::string ONNXInputName,
-            std::string ONNXOutputName,
             std::vector<std::string> in_features
             );
 
@@ -68,7 +67,7 @@ class Quality{
 			    float minPt, int nStubmin);
 
     void Set_ONNX_Model(std::string Algorithm, std::string ONNXmodel, std::string ONNXInputName,
-			std::string ONNXOutputName, std::vector<std::string> in_features);
+			std::vector<std::string> in_features);
 
 
 
@@ -78,7 +77,6 @@ class Quality{
     std::string Algorithm_ = "None";
     std::string ONNXmodel_;
     std::string ONNXInputName_;
-    std::string ONNXOutputName_;
     std::vector<std::string> in_features_;
     float maxZ0_ = 15;
     float maxEta_ = 2.4; 

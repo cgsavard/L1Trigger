@@ -15,9 +15,8 @@ Quality::Quality() {}
 Quality::Quality(string Algorithm,
                  string ONNXmodel,
                  string ONNXInputName,
-                 string ONNXOutputName,
                  vector<string> in_features) {    
-                    Set_ONNX_Model(Algorithm,ONNXmodel,ONNXInputName,ONNXOutputName,in_features);
+                    Set_ONNX_Model(Algorithm,ONNXmodel,ONNXInputName,in_features);
                 }
 
 
@@ -49,7 +48,6 @@ Quality::Quality(edm::ParameterSet Params){
         Set_ONNX_Model(Algorithm,
                        Params.getParameter<string>("ONNXmodel"),
                        Params.getParameter<string>("ONNXInputName"),
-                       Params.getParameter<string>("ONNXOutputName"),
                        Params.getParameter<vector<string>>("in_features")); 
     }
 
@@ -226,11 +224,9 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
             cms::Ort::FloatArrays ortinput;
             cms::Ort::FloatArrays ortoutputs;
 
-            //ortinput_names.push_back(this->ONNXInputName_);
-            //ortoutput_names.push_back(this->ONNXOutputName_);
-
             vector<float> Transformed_features = Feature_Transform(aTrack,this->in_features_);
             cms::Ort::ONNXRuntime Runtime(this->ONNXmodel_); //Setup ONNX runtime
+
 	    ortinput_names.push_back(this->ONNXInputName_);
 	    ortoutput_names = Runtime.getOutputNames();
 
@@ -277,12 +273,11 @@ void Quality::Set_Cut_Parameters(string Algorithm,float maxZ0, float maxEta, flo
 
 }
 
-void Quality::Set_ONNX_Model(string Algorithm,string ONNXmodel,string ONNXInputName,string ONNXOutputName, vector<string> in_features) {
+void Quality::Set_ONNX_Model(string Algorithm,string ONNXmodel,string ONNXInputName,vector<string> in_features) {
 
     Algorithm_ = Algorithm;
     ONNXmodel_ = ONNXmodel;
     ONNXInputName_ = ONNXInputName;
-    ONNXOutputName_ = ONNXOutputName;
     in_features_ = in_features;
 
 }
