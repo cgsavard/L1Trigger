@@ -290,6 +290,7 @@ L1FPGATrackProducer::L1FPGATrackProducer(edm::ParameterSet const& iConfig)
   quality_ = iConfig.getParameter<bool>("Quality");
   Quality_params = iConfig.getParameter<edm::ParameterSet>("TrackQualityPSet");
   if (quality_){
+    
     Quality_model = Quality(Quality_params);
     }
   }
