@@ -1,9 +1,12 @@
 import FWCore.ParameterSet.Config as cms
 
-TrackQualityParams = cms.PSet(Quality_Algorithm = cms.string("Cut"), #None, Cut, NN, GBDT
-                              ONNXmodel = cms.string("L1Trigger/TrackTrigger/ML_data/FakeIDNN/NN_model.onnx"),
-                              ONNXInputName = cms.string("input_1"),
-                              ONNXOutputName = cms.string("Sigmoid_Output_Layer"),
+TrackQualityParams = cms.PSet(Quality_Algorithm = cms.vstring(["Cut,NN,GBDT"]), #None, Cut, NN, GBDT
+                              ONNXmodel = cms.vstring(["L1Trigger/TrackTrigger/ML_data/FakeIDNN/NN_model.onnx",
+                                                       "L1Trigger/TrackTrigger/ML_data/FakeIDNN/GBDT_model.onnx"]),
+                              ONNXInputName = cms.vstring(["input_1","feature_input"]),
+                              ONNXOutputName = cms.vstring("Sigmoid_Output_Layer","output"),
+ 
+
                               #Vector of strings of training features, in the order that the model was trained with
                               in_features = cms.vstring(["log_chi2","log_bendchi2","log_chi2rphi","log_chi2rz",
                                                                             "nstubs","lay1_hits","lay2_hits","lay3_hits","lay4_hits",

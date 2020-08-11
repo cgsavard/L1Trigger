@@ -12,29 +12,14 @@ using namespace std;
 
 Quality::Quality() {}
 
-Quality::Quality(string Algorithm,
-                 string ONNXmodel,
-                 string ONNXInputName,
-                 string ONNXOutputName,
-                 vector<string> in_features) {    
-                    Set_ONNX_Model(Algorithm,ONNXmodel,ONNXInputName,ONNXOutputName,in_features);
-                }
-
-
-
-Quality::Quality(string Algorithm,
-                 float maxZ0,
-                 float maxEta, 
-                 float chi2dofMax,
-                 float bendchi2Max,
-                 float minPt,
-                 int nStubsmin) {
-                   Set_Cut_Parameters(Algorithm,maxZ0,maxEta,chi2dofMax,bendchi2Max,minPt,nStubsmin);   
-                }
 
 Quality::Quality(edm::ParameterSet Params){
-    string Algorithm = Params.getParameter<string>("Quality_Algorithm");
+    vector<string> Algorithms = Params.getParameter<vector<string>>("Quality_Algorithm");
     // Unpacks EDM parameter set itself to save unecessary processing within TrackProducers
+
+    for (string Algorithm : Algorithms){
+    
+
     if (Algorithm == "Cut"){
         Set_Cut_Parameters(Algorithm,
                            (float)Params.getParameter<double>("maxZ0"),
@@ -51,6 +36,8 @@ Quality::Quality(edm::ParameterSet Params){
                        Params.getParameter<string>("ONNXInputName"),
                        Params.getParameter<string>("ONNXOutputName"),
                        Params.getParameter<vector<string>>("in_features")); 
+    }
+
     }
 
 }
@@ -196,77 +183,83 @@ vector<float> Quality::Feature_Transform(TTTrack < Ref_Phase2TrackerDigi_ > aTra
 
     
 void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
-    if (this->Algorithm_ == "Cut"){
-        // Get Track parameters
-        float trk_pt = aTrack.momentum().perp();
-        float trk_bend_chi2 = aTrack.stubPtConsistency();
-        float trk_z0 = aTrack.z0();
-        float trk_eta = aTrack.momentum().eta();
-        float trk_chi2 = aTrack.chi2();
-        const auto& stubRefs = aTrack.getStubRefs();
-        int nStubs = stubRefs.size();
+    
+    int onnx_algorithm_i = 0;
+    for (string Algorithm : this->Algorithms_){
+        
+        if (Algorithm == "Cut"){
+            // Get Track parameters
+            float trk_pt = aTrack.momentum().perp();
+            float trk_bend_chi2 = aTrack.stubPtConsistency();
+            float trk_z0 = aTrack.z0();
+            float trk_eta = aTrack.momentum().eta();
+            float trk_chi2 = aTrack.chi2();
+            const auto& stubRefs = aTrack.getStubRefs();
+            int nStubs = stubRefs.size();
 
-        float classification = 0.0; // Default classification is 0
+            float classification = 0.0; // Default classification is 0
 
-        if (trk_pt >= this->minPt_ && 
-            abs(trk_z0) < this->maxZ0_ && 
-            abs(trk_eta) < this->maxEta_ && 
-            trk_chi2 < this->chi2dofMax_ && 
-            trk_bend_chi2 < this->bendchi2Max_ && 
-            nStubs >= this->nStubsmin_) classification = 1.0;
-            // Classification updated to 1 if conditions are met
+            if (trk_pt >= this->minPt_ && 
+                abs(trk_z0) < this->maxZ0_ && 
+                abs(trk_eta) < this->maxEta_ && 
+                trk_chi2 < this->chi2dofMax_ && 
+                trk_bend_chi2 < this->bendchi2Max_ && 
+                nStubs >= this->nStubsmin_) classification = 1.0;
+                // Classification updated to 1 if conditions are met
 
-        aTrack.settrkMVA1(classification);
-    }
+            //aTrack.settrkMVA1(classification);
+            aTrack.settrkMVAvector(classification);
 
-    else {
-            // Setup ONNX input and output names and arrays
-            vector<string> ortinput_names;
-            vector<string> ortoutput_names;
-            cms::Ort::FloatArrays ortinput;
-            cms::Ort::FloatArrays ortoutputs;
+        }
 
-            ortinput_names.push_back(this->ONNXInputName_);
-            ortoutput_names.push_back(this->ONNXOutputName_);
+        else {
+                // Setup ONNX input and output names and arrays
+                vector<string> ortinput_names;
+                vector<string> ortoutput_names;
+                cms::Ort::FloatArrays ortinput;
+                cms::Ort::FloatArrays ortoutputs;
 
-            vector<float> Transformed_features = Feature_Transform(aTrack,this->in_features_);
-            cms::Ort::ONNXRuntime Runtime(this->ONNXmodel_); //Setup ONNX runtime
+                ortinput_names.push_back(this->ONNXInputNames_.at(onnx_algorithm_i));
+                ortoutput_names.push_back(this->ONNXOutputNames_.at(onnx_algorithm_i));
+
+                vector<float> Transformed_features = Feature_Transform(aTrack,this->in_features_);
+                cms::Ort::ONNXRuntime Runtime(this->ONNXmodels_.at(onnx_algorithm_i)); //Setup ONNX runtime
 
 
-            //ONNX runtime recieves a vector of vectors of floats so push back the input
-            // vector of float to create a 1,1,21 ortinput
-            ortinput.push_back(Transformed_features);
+                //ONNX runtime recieves a vector of vectors of floats so push back the input
+                // vector of float to create a 1,1,21 ortinput
+                ortinput.push_back(Transformed_features);
 
-            // batch_size 1 as only one set of transformed features is being processed
-            int batch_size = 1;
-            // Run classification on a batch of 1
-            ortoutputs = Runtime.run(ortinput_names,ortinput,ortoutput_names,batch_size); 
-            // access first value of nested vector
-            if (this->Algorithm_ == "NN"){
-                aTrack.settrkMVA1(ortoutputs[0][0]);
-            }
+                // batch_size 1 as only one set of transformed features is being processed
+                int batch_size = 1;
+                // Run classification on a batch of 1
+                ortoutputs = Runtime.run(ortinput_names,ortinput,ortoutput_names,batch_size); 
+                // access first value of nested vector
+                if (this->Algorithm_ == "NN"){
+                    aTrack.settrkMVAvector(ortoutputs[0][0]);
+                    onnx_algorithm_i++;
 
-            // The ortoutput_names vector for the GBDT is left blank due to issues returning the correct
-            // output, instead the GBDT will fill the ortoutputs with both the class prediciton and the class 
-            // probabilities. 
-            //ortoutputs[0][0] = class prediction based on a 0.5 threshold
-            //ortoutputs[1][0] = negative class probability
-            //ortoutputs[1][1] = positive class probability
-            
-            if (this->Algorithm_ == "GBDT"){
-                aTrack.settrkMVA1(ortoutputs[1][1]);
-            }
+                }
 
-            if (this->Algorithm_ == "None"){
-                aTrack.settrkMVA1(-999);
-            }
+                // The ortoutput_names vector for the GBDT is left blank due to issues returning the correct
+                // output, instead the GBDT will fill the ortoutputs with both the class prediciton and the class 
+                // probabilities. 
+                //ortoutputs[0][0] = class prediction based on a 0.5 threshold
+                //ortoutputs[1][0] = negative class probability
+                //ortoutputs[1][1] = positive class probability
+                
+                if (this->Algorithm_ == "GBDT"){
+                    aTrack.settrkMVAvector(ortoutputs[1][1]);
+                    onnx_algorithm_i++
+                }
 
-    }
+        }
+        }
 }
 
 void Quality::Set_Cut_Parameters(string Algorithm,float maxZ0, float maxEta, float chi2dofMax,float bendchi2Max, float minPt, int nStubmin) {
 
-    Algorithm_ = Algorithm;
+    Algorithms_.push_back(Algorithm);
     maxZ0_ = maxZ0;
     maxEta_ = maxEta; 
     chi2dofMax_ = chi2dofMax;
@@ -278,10 +271,10 @@ void Quality::Set_Cut_Parameters(string Algorithm,float maxZ0, float maxEta, flo
 
 void Quality::Set_ONNX_Model(string Algorithm,string ONNXmodel,string ONNXInputName,string ONNXOutputName, vector<string> in_features) {
 
-    Algorithm_ = Algorithm;
-    ONNXmodel_ = ONNXmodel;
-    ONNXInputName_ = ONNXInputName;
-    ONNXOutputName_ = ONNXOutputName;
+    Algorithms_.push_back(Algorithm);
+    ONNXmodels_.push_back(ONNXmodel);
+    ONNXInputNames_.push_back(ONNXInputName);
+    ONNXOutputNames_.push_back(ONNXOutputName);
     in_features_ = in_features;
 
 }

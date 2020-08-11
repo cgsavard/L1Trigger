@@ -34,22 +34,6 @@ class Quality{
     //Default Constructor
     Quality();
 
-    //Overloaded Constructors depending on how the Quality class is being initiated
-    Quality(std::string Algorithm,
-            std::string ONNXmodel,
-            std::string ONNXInputName,
-            std::string ONNXOutputName,
-            std::vector<std::string> in_features
-            );
-
-    Quality(std::string Algorithm,
-            float maxZ0,
-            float maxEta, 
-            float chi2dofMax,
-            float bendchi2Max,
-            float minPt,
-            int nStubsmin
-            );
 
     Quality(edm::ParameterSet Params);
 
@@ -75,11 +59,11 @@ class Quality{
 
   private:
     // Private Memember Data
-    std::string Algorithm_ = "None";
-    std::string ONNXmodel_;
-    std::string ONNXInputName_;
-    std::string ONNXOutputName_;
-    std::vector<std::string> in_features_;
+    std::vector<std::string> Algorithms_.clear();
+    std::vector<std::string> ONNXmodels_.clear();
+    std::vector<std::string> ONNXInputNames_.clear();
+    std::vector<std::string> ONNXOutputNames_.clear();
+    std::vector<std::string> in_featuress_.clear();
     float maxZ0_ = 15;
     float maxEta_ = 2.4; 
     float chi2dofMax_ = 40;

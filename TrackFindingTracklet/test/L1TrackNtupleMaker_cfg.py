@@ -178,7 +178,8 @@ process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        TrackingInJets = cms.bool(False),
                                        GenJetInputTag = cms.InputTag("ak4GenJets", ""),
                                        # Was track quality performed?
-                                       TrackQuality = cms.bool(True)
+                                       TrackQuality = cms.bool(True),
+                                       NQualities = cms.int32(2)
                                        )
 
 process.ana = cms.Path(process.L1TrackNtuple)

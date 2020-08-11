@@ -167,7 +167,7 @@ private:
   std::vector<int>* m_trk_unknown;
   std::vector<int>* m_trk_combinatoric;
   std::vector<int>* m_trk_fake;  //0 fake, 1 track from primary interaction, 2 secondary track
-  std::vector<float>* m_trk_MVA1;
+  std::vector<std::vector<float>>* m_trk_MVA;
   std::vector<int>* m_trk_matchtp_pdgid;
   std::vector<float>* m_trk_matchtp_pt;
   std::vector<float>* m_trk_matchtp_eta;
@@ -271,6 +271,7 @@ L1TrackNtupleMaker::L1TrackNtupleMaker(edm::ParameterSet const& iConfig) : confi
 
   TrackingInJets = iConfig.getParameter<bool>("TrackingInJets");
   TrackQuality = iConfig.getParameter<bool>("TrackQuality");
+  NQualities = iConfig.getParameter<bool>("NQualities");
 
   L1StubInputTag = iConfig.getParameter<edm::InputTag>("L1StubInputTag");
   MCTruthClusterInputTag = iConfig.getParameter<edm::InputTag>("MCTruthClusterInputTag");
@@ -335,7 +336,7 @@ void L1TrackNtupleMaker::beginJob() {
   m_trk_unknown = new std::vector<int>;
   m_trk_combinatoric = new std::vector<int>;
   m_trk_fake = new std::vector<int>;
-  m_trk_MVA1 = new std::vector<float>;
+  m_trk_MVA = new std::vector<std::vector<float>>;
   m_trk_matchtp_pdgid = new std::vector<int>;
   m_trk_matchtp_pt = new std::vector<float>;
   m_trk_matchtp_eta = new std::vector<float>;
@@ -443,7 +444,11 @@ void L1TrackNtupleMaker::beginJob() {
       eventTree->Branch("trk_injet_vhighpt", &m_trk_injet_vhighpt);
     }
     if (TrackQuality){
-      eventTree->Branch("trk_MVA1", &m_trk_MVA1);
+      for (int i=0; i<NQualities; i++){
+        std::string branch_name = "trk_MVA" + std::string(i)
+        eventTree->Branch(branch_name, &m_trk_MVA[i]);
+      }
+        
     }
   }
 
@@ -558,7 +563,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     m_trk_unknown->clear();
     m_trk_combinatoric->clear();
     m_trk_fake->clear();
-    m_trk_MVA1->clear();
+    m_trk_MVA->clear();
     m_trk_matchtp_pdgid->clear();
     m_trk_matchtp_pt->clear();
     m_trk_matchtp_eta->clear();
@@ -865,10 +870,18 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
         tmp_trk_d0 = -tmp_trk_x0 * sin(tmp_trk_phi) + tmp_trk_y0 * cos(tmp_trk_phi);
       }
 
-      float tmp_trk_MVA1 = -999;
+      std::vector<float> tmp_trk_MVA1(NQualities,-999);
       if (TrackQuality) {
+        
+        for (int i=0; i<NQualities; i++){
+
+          std::vector<float> trkMVAvector = iterL1Track->trkMVAvector();
+          tmp_trk_MVA[i] = trkMVAvector[i];
+      }
+        
+    
 	      //std::cout << iterL1Track->trkMVA1() << std::endl;
-        tmp_trk_MVA1 = iterL1Track->trkMVA1();
+        
       }
 
       float tmp_trk_chi2 = iterL1Track->chi2();
@@ -961,7 +974,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       m_trk_z0->push_back(tmp_trk_z0);
       if (L1Tk_nPar == 5) m_trk_d0->push_back(tmp_trk_d0);
       else m_trk_d0->push_back(999.);
-      if (TrackQuality) m_trk_MVA1->push_back(tmp_trk_MVA1);
+      if (TrackQuality) m_trk_MVA->push_back(tmp_trk_MVA);
       m_trk_chi2->push_back(tmp_trk_chi2);
       m_trk_chi2rphi->push_back(tmp_trk_chi2rphi);
       m_trk_chi2rz->push_back(tmp_trk_chi2rz);
