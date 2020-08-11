@@ -168,7 +168,7 @@ private:
   std::vector<int>* m_trk_unknown;
   std::vector<int>* m_trk_combinatoric;
   std::vector<int>* m_trk_fake;  //0 fake, 1 track from primary interaction, 2 secondary track
-  std::vector<std::vector<float>*> m_trk_MVA;
+  std::vector<std::vector<float>>* m_trk_MVA;
   std::vector<int>* m_trk_matchtp_pdgid;
   std::vector<float>* m_trk_matchtp_pt;
   std::vector<float>* m_trk_matchtp_eta;
@@ -447,9 +447,9 @@ void L1TrackNtupleMaker::beginJob() {
     if (TrackQuality){
       for (int i=0; i<NQualities; i++){
         std::string branch_name = "trk_MVA" + std::to_string(i);
-        //std::vector<float> m_trk_temp_MVA = m_trk_MVA->at(i);
+        std::vector<float>* m_trk_temp_MVA = m_trk_MVA->at(i);
 
-        eventTree->Branch(branch_name, &m_trk_MVA.at(i));
+        eventTree->Branch(branch_name, &m_trk_temp_MVA);
       }
         
     }
