@@ -444,12 +444,16 @@ void L1TrackNtupleMaker::beginJob() {
       eventTree->Branch("trk_injet_highpt", &m_trk_injet_highpt);
       eventTree->Branch("trk_injet_vhighpt", &m_trk_injet_vhighpt);
     }
+    
+
     if (TrackQuality){
       for (int i=0; i<NQualities; i++){
-        std::string branch_name = "trk_MVA" + std::to_string(i);
-        std::vector<float>* m_trk_temp_MVA = m_trk_MVA->at(i);
-
-        eventTree->Branch(branch_name, &m_trk_temp_MVA);
+        std::string s = std::to_string(i);
+        char const *pchar = s.c_str();
+        
+        //std::string branch_name = "trk_MVA" + std::to_string(i);
+        //mva_branch_names.push_back(branch_name);
+        eventTree->Branch(pchar, (&m_trk_MVA)[i]);
       }
         
     }

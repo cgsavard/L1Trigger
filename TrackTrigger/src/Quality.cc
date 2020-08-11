@@ -16,6 +16,7 @@ Quality::Quality() {
       ONNXInputNames_.clear();
       ONNXOutputNames_.clear();
       in_features_.clear();
+      std::cout<< "default constructed" << endl;
 
     };
 
@@ -25,6 +26,7 @@ Quality::Quality(edm::ParameterSet Params){
     // Unpacks EDM parameter set itself to save unecessary processing within TrackProducers
 
     for (string Algorithm : Algorithms){
+        std::cout<< "loop through algorithm constructors:" << Algorithm << endl;
     
 
     if (Algorithm == "Cut"){
@@ -51,6 +53,7 @@ Quality::Quality(edm::ParameterSet Params){
 
  
 vector<float> Quality::Feature_Transform(TTTrack < Ref_Phase2TrackerDigi_ > aTrack, std::vector<std::string> in_features) {
+    std::cout<< "transform features" << endl;
     // List input features for MVA in proper order below, the features options are 
     // {"log_chi2","log_chi2rphi","log_chi2rz","log_bendchi2","nstubs","lay1_hits","lay2_hits",
     // "lay3_hits","lay4_hits","lay5_hits","lay6_hits","disk1_hits","disk2_hits","disk3_hits",
@@ -193,6 +196,7 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
     
     int onnx_algorithm_i = 0;
     for (string Algorithm : this->Algorithms_){
+        std::cout<< "loopin through predictions" << Algorithm << endl;
         
         if (Algorithm == "Cut"){
             // Get Track parameters
@@ -216,6 +220,7 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
 
             //aTrack.settrkMVA1(classification);
             aTrack.settrkMVAvector(classification);
+            std::cout<< "cut predicted" << Algorithm << endl;
 
         }
 
@@ -244,6 +249,7 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
                 // access first value of nested vector
                 if (Algorithm == "NN"){
                     aTrack.settrkMVAvector(ortoutputs[0][0]);
+                    std::cout<< "nn predicted" << Algorithm << endl;
                     onnx_algorithm_i++;
 
                 }
@@ -257,6 +263,7 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
                 
                 if (Algorithm == "GBDT"){
                     aTrack.settrkMVAvector(ortoutputs[1][1]);
+                    std::cout<< "gbdt predicted" << Algorithm << endl;
                     onnx_algorithm_i++;
                 }
 
