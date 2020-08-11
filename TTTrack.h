@@ -403,7 +403,7 @@ std::vector<double> TTTrack<T>::trkMVAvector() const {
 
 template <typename T>
 void TTTrack<T>::settrkMVAvector(double atrkMVA) {
-    theTrkMVAvector_.pushback(atrkMVA);
+    theTrkMVAvector_.push_back(atrkMVA);
     return;
 }
 
