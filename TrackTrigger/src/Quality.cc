@@ -26,18 +26,19 @@ Quality::Quality(edm::ParameterSet Params){
     vector<string> Algorithms = Params.getParameter<vector<string>>("Quality_Algorithm");
     // Unpacks EDM parameter set itself to save unecessary processing within TrackProducers
     std::cout << "parameter set constructor 2" << endl;
-    vector<string> Models=  Params.getParameter<vector<<string>>("ONNXmodel")
-    vector<string> Inputs = Params.getParameter<vector<<string>>("ONNXInputName")
-    vector<string> Outputs= Params.getParameter<vector<<string>>("ONNXOutputName")
-    vector<string> in_features = Params.getParameter<vector<string>>("in_features")
+    
+    vector<string> Models=  Params.getParameter<vector<string>>("ONNXmodel");
+    vector<string> Inputs = Params.getParameter<vector<string>>("ONNXInputName");
+    vector<string> Outputs= Params.getParameter<vector<string>>("ONNXOutputName");
+    vector<string> in_features = Params.getParameter<vector<string>>("in_features");
 
-
-    for (int i = 0; i<Algorithms.size(); ++i){
-        std::cout<< "loop through algorithm constructors:" << Algorithms[i] << endl;
+    int onnx_i = 0;
+    for (string Algorithm : Algorithms){
+        std::cout<< "loop through algorithm constructors:" << Algorithm << endl;
     
 
-    if (Algorithms[i] == "Cut"){
-        Set_Cut_Parameters(Algorithms[i],
+    if (Algorithm == "Cut"){
+        Set_Cut_Parameters(Algorithm,
                            (float)Params.getParameter<double>("maxZ0"),
                            (float)Params.getParameter<double>("maxEta"),
                            (float)Params.getParameter<double>("chi2dofMax"),
@@ -48,12 +49,13 @@ Quality::Quality(edm::ParameterSet Params){
 
     else {
 
-        Set_ONNX_Model(Algorithms[i],
-                       Models[i],
-                       Inputs[i],
-                       Outputs[i],
+        Set_ONNX_Model(Algorithm,
+                       Models[onnx_i],
+                       Inputs[onnx_i],
+                       Outputs[onnx_i],
                        in_features
                        ); 
+       onnx_i++;
     }
 
     }
