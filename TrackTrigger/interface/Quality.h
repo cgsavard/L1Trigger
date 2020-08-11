@@ -32,14 +32,7 @@ C.Brown 28/07/20
 class Quality{
   public:
     //Default Constructor
-    Quality(){
-      Algorithms_.clear();
-      ONNXmodels_.clear();
-      ONNXInputNames_.clear();
-      ONNXOutputNames_.clear();
-      in_features_.clear();
-
-    };
+    Quality()
 
 
     Quality(edm::ParameterSet Params);

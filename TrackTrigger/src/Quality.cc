@@ -10,7 +10,14 @@ using namespace std;
 
 //Constructors
 
-Quality::Quality() {}
+Quality::Quality() {
+      Algorithms_.clear();
+      ONNXmodels_.clear();
+      ONNXInputNames_.clear();
+      ONNXOutputNames_.clear();
+      in_features_.clear();
+
+    };
 
 
 Quality::Quality(edm::ParameterSet Params){
