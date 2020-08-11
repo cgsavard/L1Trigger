@@ -32,7 +32,7 @@ C.Brown 28/07/20
 class Quality{
   public:
     //Default Constructor
-    Quality()
+    Quality();
 
 
     Quality(edm::ParameterSet Params);

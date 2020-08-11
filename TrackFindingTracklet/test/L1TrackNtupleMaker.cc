@@ -116,6 +116,7 @@ private:
   bool TrackingInJets;  // do tracking in jets?
 
   bool TrackQuality; //Output track quality?
+  int NQualities;
 
   edm::InputTag L1TrackInputTag;       // L1 track collection
   edm::InputTag MCTruthTrackInputTag;  // MC truth collection
@@ -870,12 +871,12 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
         tmp_trk_d0 = -tmp_trk_x0 * sin(tmp_trk_phi) + tmp_trk_y0 * cos(tmp_trk_phi);
       }
 
-      std::vector<float> tmp_trk_MVA1(NQualities,-999);
+      std::vector<float> tmp_trk_MVA(NQualities,-999);
       if (TrackQuality) {
         
         for (int i=0; i<NQualities; i++){
 
-          std::vector<float> trkMVAvector = iterL1Track->trkMVAvector();
+          std::vector<double> trkMVAvector = iterL1Track->trkMVAvector();
           tmp_trk_MVA[i] = trkMVAvector[i];
       }
         
