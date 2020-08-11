@@ -16,15 +16,16 @@ Quality::Quality() {
       ONNXInputNames_.clear();
       ONNXOutputNames_.clear();
       in_features_.clear();
-      std::cout<< "default constructed" << endl;
+
 
     };
 
 
 Quality::Quality(edm::ParameterSet Params){
+    std::cout << "parameter set constructor" << endl;
     vector<string> Algorithms = Params.getParameter<vector<string>>("Quality_Algorithm");
     // Unpacks EDM parameter set itself to save unecessary processing within TrackProducers
-
+    std::cout << "parameter set constructor 2" << endl;
     for (string Algorithm : Algorithms){
         std::cout<< "loop through algorithm constructors:" << Algorithm << endl;
     
