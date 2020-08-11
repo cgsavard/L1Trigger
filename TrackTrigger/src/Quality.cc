@@ -235,7 +235,7 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
                 // Run classification on a batch of 1
                 ortoutputs = Runtime.run(ortinput_names,ortinput,ortoutput_names,batch_size); 
                 // access first value of nested vector
-                if (this->Algorithm_ == "NN"){
+                if (Algorithm == "NN"){
                     aTrack.settrkMVAvector(ortoutputs[0][0]);
                     onnx_algorithm_i++;
 
@@ -248,9 +248,9 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
                 //ortoutputs[1][0] = negative class probability
                 //ortoutputs[1][1] = positive class probability
                 
-                if (this->Algorithm_ == "GBDT"){
+                if (Algorithm == "GBDT"){
                     aTrack.settrkMVAvector(ortoutputs[1][1]);
-                    onnx_algorithm_i++
+                    onnx_algorithm_i++;
                 }
 
         }

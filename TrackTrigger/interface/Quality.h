@@ -32,7 +32,14 @@ C.Brown 28/07/20
 class Quality{
   public:
     //Default Constructor
-    Quality();
+    Quality(){
+      Algorithms_.clear();
+      ONNXmodels_.clear();
+      ONNXInputNames_.clear();
+      ONNXOutputNames_.clear();
+      in_features_.clear();
+
+    };
 
 
     Quality(edm::ParameterSet Params);
@@ -59,11 +66,11 @@ class Quality{
 
   private:
     // Private Memember Data
-    std::vector<std::string> Algorithms_.clear();
-    std::vector<std::string> ONNXmodels_.clear();
-    std::vector<std::string> ONNXInputNames_.clear();
-    std::vector<std::string> ONNXOutputNames_.clear();
-    std::vector<std::string> in_featuress_.clear();
+    std::vector<std::string> Algorithms_;
+    std::vector<std::string> ONNXmodels_;
+    std::vector<std::string> ONNXInputNames_;
+    std::vector<std::string> ONNXOutputNames_;
+    std::vector<std::string> in_features_;
     float maxZ0_ = 15;
     float maxEta_ = 2.4; 
     float chi2dofMax_ = 40;
