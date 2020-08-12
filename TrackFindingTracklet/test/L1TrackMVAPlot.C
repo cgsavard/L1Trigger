@@ -195,6 +195,7 @@ void L1TrackMVAPlot(TString type,
 
   vector<float> TPR;
   vector<float> FPR;
+  vector<float> dec_thresh;
   int n = 100; //num of entries on ROC curve
   for (int i=0; i<n; i++){
     float dt = (float)i/(n-1); //make sure it starts at (0,0) and ends at (1,1)
@@ -213,6 +214,7 @@ void L1TrackMVAPlot(TString type,
     }
     TPR.push_back((float)TP/P);
     FPR.push_back((float)FP/N);
+    dec_thresh.push_back(dt);
   }
 
   // calculate AUC
@@ -224,6 +226,14 @@ void L1TrackMVAPlot(TString type,
   TGraph* ROC = new TGraph(n, FPR.data(), TPR.data());
   ROC->SetName("ROC_MVA1");
   ROC->SetTitle(("ROC curve (AUC = "+to_string(AUC)+"); FPR; TPR").c_str());  
+
+  TGraph* TPR_vs_dt = new TGraph(n, dec_thresh.data(), TPR.data());
+  TPR_vs_dt->SetName("TPR_vs_dt_MVA1");
+  TPR_vs_dt->SetTitle("TPR vs decision threshold; decision thresh.; TPR");
+
+  TGraph* FPR_vs_dt = new TGraph(n, dec_thresh.data(), FPR.data());
+  FPR_vs_dt->SetName("FPR_vs_dt_MVA1");
+  FPR_vs_dt->SetTitle("FPR vs decision threshold; decision thresh.; FPR");
 
   // -------------------------------------------------------------------------------------------
   // create TPR vs. eta and FPR vs. eta
@@ -358,6 +368,12 @@ void L1TrackMVAPlot(TString type,
   ROC->Draw("AL");
   ROC->Write();
   c.SaveAs("ROC.pdf");
+
+  TPR_vs_dt->Draw("AL");
+  TPR_vs_dt->Write();
+
+  FPR_vs_dt->Draw("AL");
+  FPR_vs_dt->Write();
 
   TPR_vs_eta->Draw("ap");
   TPR_vs_eta->Write();
