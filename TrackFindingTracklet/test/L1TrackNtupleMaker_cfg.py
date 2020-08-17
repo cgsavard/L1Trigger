@@ -57,13 +57,13 @@ def getTxtFile(txtFileName):
 
 if GEOMETRY == "D49":
     #inputMC = ["/store/relval/CMSSW_11_1_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v2_2026D49PU200-v1/20000/F7BF4AED-51F1-9D47-B86D-6C3DDA134AB9.root"]
-    inputMC = ['/store/relval/CMSSW_11_1_0/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v3_2026D49PU200-v1/10000/55A5DB80-84E7-2746-819E-2ECAFB126BD2.root']    
+    inputMC = ["/store/relval/CMSSW_11_1_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v2_2026D49PU200-v1/20000/2D153BE5-611B-3E40-B3D1-E1D5A35A53E6.root","/store/relval/CMSSW_11_1_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v2_2026D49PU200-v1/20000/2C3F5156-3A3C-074D-9F89-462EC5E6E058.root","/store/relval/CMSSW_11_1_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v2_2026D49PU200-v1/20000/2B390F84-395E-D44B-8E4E-4ACB9F526817.root","/store/relval/CMSSW_11_1_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v2_2026D49PU200-v1/20000/26321D7B-7A96-E442-B644-C4BED07AA807.root","/store/relval/CMSSW_11_1_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v2_2026D49PU200-v1/20000/25D90FC3-49EF-7448-89F6-935F8D4BB8AC.root","/store/relval/CMSSW_11_1_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v2_2026D49PU200-v1/20000/20A54E94-A2D2-FA4A-B5F7-DFF768ACC6F5.root","/store/relval/CMSSW_11_1_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v2_2026D49PU200-v1/20000/1F59B52D-BD93-CA4A-BB59-64E00A436EEF.root","/store/relval/CMSSW_11_1_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v2_2026D49PU200-v1/20000/1D2905A5-5CB9-BB41-8C59-64427CEE7082.root","/store/relval/CMSSW_11_1_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v2_2026D49PU200-v1/20000/19678708-B88E-A547-884E-CD1D924B2D3C.root","/store/relval/CMSSW_11_1_0_pre2/RelValTTbar_14TeV/GEN-SIM-DIGI-RAW/PU25ns_110X_mcRun4_realistic_v2_2026D49PU200-v1/20000/1818154D-11CB-9841-932A-A48845A430B6.root"]
 else:
     print "this is not a valid geometry!!!"
     
 process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(*inputMC))
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string('TTbar_PU200_'+GEOMETRY+'.root'), closeFileFast = cms.untracked.bool(True))
+process.TFileService = cms.Service("TFileService", fileName = cms.string('TTbar_PU200_'+GEOMETRY+'_test.root'), closeFileFast = cms.untracked.bool(True))
 process.Timing = cms.Service("Timing", summaryOnly = cms.untracked.bool(True))
 
 
@@ -87,8 +87,16 @@ process.Timing = cms.Service("Timing", summaryOnly = cms.untracked.bool(True))
 
 # Load Quality params to change algorithm and model location
 process.load("L1Trigger.TrackTrigger.L1TrackClassifier_cfi")
-process.TrackQualityParams.Quality_Algorithm = cms.string("NN")
-process.TrackQualityParams.ONNXmodel = cms.string("../../TrackTrigger/ML_data/FakeIDNN/NN_model.onnx")
+process.TrackQualityParams.Quality_Algorithm = cms.string("MVA")
+#process.TrackQualityParams.ONNXmodel = cms.string("../../TrackTrigger/ML_data/FakeIDGBDT/GBDT_model.onnx")
+#process.TrackQualityParams.ONNXmodel = cms.string("../../TrackTrigger/ML_data/GBDT_sklearnxgb_model.onnx")
+#process.TrackQualityParams.ONNXInputName = cms.string("feature_input") #for GBDT ONNX model
+#process.TrackQualityParams.ONNXInputName = cms.string("float_input") #for sklearn model
+#process.TrackQualityParams.in_features = cms.vstring(["eta","bendchi2","nstubs","nlaymiss_interior","chi2rphi","chi2rz"]) #for skl GBDT model
+#process.TrackQualityParams.in_features = cms.vstring(["log_chi2","log_bendchi2","log_chi2rphi","log_chi2rz",
+#             "nstubs","lay1_hits","lay2_hits","lay3_hits","lay4_hits",
+#             "lay5_hits","lay6_hits","disk1_hits","disk2_hits",
+#             "disk3_hits","disk4_hits","disk5_hits","rinv","tanl","z0","dtot","ltot"])
 
 process.load("L1Trigger.TrackFindingTracklet.L1HybridEmulationTracks_cff")
 
