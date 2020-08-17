@@ -90,6 +90,7 @@ void L1TrackMVAPlot(TString type,
   vector<int>* trk_genuine;
   vector<int>* trk_loose;
   vector<float>* trk_MVA1;
+  vector<float>* trk_matchtp_pdgid;
 
   TBranch* b_trk_pt;
   TBranch* b_trk_eta;
@@ -107,6 +108,7 @@ void L1TrackMVAPlot(TString type,
   TBranch* b_trk_genuine;
   TBranch* b_trk_loose;
   TBranch* b_trk_MVA1;
+  TBranch* b_trk_matchtp_pdgid;
 
   trk_pt = 0;
   trk_eta = 0;
@@ -124,6 +126,7 @@ void L1TrackMVAPlot(TString type,
   trk_genuine = 0;
   trk_loose = 0;
   trk_MVA1 = 0;
+  trk_matchtp_pdgid = 0;
 
   tree->SetBranchAddress("trk_pt", &trk_pt, &b_trk_pt);
   tree->SetBranchAddress("trk_eta", &trk_eta, &b_trk_eta);
@@ -141,6 +144,7 @@ void L1TrackMVAPlot(TString type,
   tree->SetBranchAddress("trk_genuine", &trk_genuine, &b_trk_genuine);
   tree->SetBranchAddress("trk_loose", &trk_loose, &b_trk_loose);
   tree->SetBranchAddress("trk_MVA1", &trk_MVA1, &b_trk_MVA1);
+  tree->SetBranchAddress("trk_matchtp_pdgid", &trk_matchtp_pdgid, &b_trk_matchtp_pdgid);
 
   // ----------------------------------------------------------------------------------------------------------------
   // histograms
@@ -166,6 +170,7 @@ void L1TrackMVAPlot(TString type,
   vector<float> fakes;
   vector<float> etas;
   vector<float> pts;
+  vector<int> pdgids;
   for (int i = 0; i < nevt; i++) {
     tree->GetEntry(i, 0);
 
@@ -177,11 +182,13 @@ void L1TrackMVAPlot(TString type,
       float fake = trk_fake->at(it);
       float eta = trk_eta->at(it);
       float pt = trk_pt->at(it);
+      float pdgid = trk_matchtp_pdgid->at(it);
 
       MVA1s.push_back(MVA1);
       fakes.push_back(fake);
       etas.push_back(eta);
       pts.push_back(pt);
+      pdgids.push_back(pdgid);
 
       h_trk_MVA1->Fill(MVA1);
       if (fake==1.) h_trk_MVA1_real->Fill(MVA1);
@@ -193,39 +200,74 @@ void L1TrackMVAPlot(TString type,
   // create ROC curve
   // -------------------------------------------------------------------------------------------
 
-  vector<float> TPR;
+  vector<float> TPR, TPR_mu, TPR_el, TPR_had;
   vector<float> FPR;
   vector<float> dec_thresh;
   int n = 100; //num of entries on ROC curve
   for (int i=0; i<n; i++){
     float dt = (float)i/(n-1); //make sure it starts at (0,0) and ends at (1,1)
     int TP = 0;
+    int TP_mu = 0;
+    int TP_el = 0;
+    int TP_had = 0;
     int FP = 0;
     int P = 0;
+    int P_mu = 0;
+    int P_el = 0;
+    int P_had = 0;
     int N = 0;
     for (int k=0; k<MVA1s.size(); k++){
       if (fakes.at(k)){
 	P++;
 	if (MVA1s.at(k)>dt) TP++;
+	if (abs(pdgids.at(k))==13){
+	  P_mu++;
+	  if (MVA1s.at(k)>dt) TP_mu++;
+	}else if (abs(pdgids.at(k))==11){
+	  P_el++;
+	  if (MVA1s.at(k)>dt) TP_el++;
+	}else if (abs(pdgids.at(k))>37 && abs(pdgids.at(k))!=999){
+	  P_had++;
+	  if (MVA1s.at(k)>dt) TP_had++;
+	}
       }else{
 	N++;
 	if (MVA1s.at(k)>dt) FP++;
       }
     }
+    cout << P << " " << P_mu << endl;
     TPR.push_back((float)TP/P);
+    TPR_mu.push_back((float)TP_mu/P_mu);
+    TPR_el.push_back((float)TP_el/P_el);
+    TPR_had.push_back((float)TP_had/P_had);
     FPR.push_back((float)FP/N);
     dec_thresh.push_back(dt);
   }
 
   // calculate AUC
-  float AUC = 0.0;
+  float AUC, AUC_mu, AUC_el, AUC_had = 0.0;
   for (int i=0; i<n-1; i++){
     AUC += (TPR[i]+TPR[i+1])/2*(FPR[i]-FPR[i+1]);
+    AUC_mu += (TPR_mu[i]+TPR_mu[i+1])/2*(FPR[i]-FPR[i+1]);
+    AUC_el += (TPR_el[i]+TPR_el[i+1])/2*(FPR[i]-FPR[i+1]);
+    AUC_had += (TPR_had[i]+TPR_had[i+1])/2*(FPR[i]-FPR[i+1]);
   }
 
   TGraph* ROC = new TGraph(n, FPR.data(), TPR.data());
   ROC->SetName("ROC_MVA1");
   ROC->SetTitle(("ROC curve (AUC = "+to_string(AUC)+"); FPR; TPR").c_str());  
+
+  TGraph* ROC_mu = new TGraph(n, FPR.data(), TPR_mu.data());
+  ROC_mu->SetName("ROC_mu");
+  ROC_mu->SetTitle(("ROC curve (muons, AUC = "+to_string(AUC_mu)+"); FPR; TPR").c_str());
+
+  TGraph* ROC_el = new TGraph(n, FPR.data(), TPR_el.data());
+  ROC_el->SetName("ROC_el");
+  ROC_el->SetTitle(("ROC curve (electrons, AUC = "+to_string(AUC_el)+"); FPR; TPR").c_str());
+
+  TGraph* ROC_had = new TGraph(n, FPR.data(), TPR_had.data());
+  ROC_had->SetName("ROC_had");
+  ROC_had->SetTitle(("ROC curve (hadrons, AUC = "+to_string(AUC_had)+"); FPR; TPR").c_str());
 
   TGraph* TPR_vs_dt = new TGraph(n, dec_thresh.data(), TPR.data());
   TPR_vs_dt->SetName("TPR_vs_dt_MVA1");
@@ -368,6 +410,15 @@ void L1TrackMVAPlot(TString type,
   ROC->Draw("AL");
   ROC->Write();
   c.SaveAs("ROC.pdf");
+
+  ROC_mu->Draw("AL");
+  ROC_mu->Write();
+
+  ROC_el->Draw("AL");
+  ROC_el->Write();
+
+  ROC_had->Draw("AL");
+  ROC_had->Write();
 
   TPR_vs_dt->Draw("AL");
   TPR_vs_dt->Write();
