@@ -141,9 +141,6 @@ private:
   edm::EDGetTokenT<std::vector<TrackingVertex> > TrackingVertexToken_;
 
   edm::EDGetTokenT<std::vector<reco::GenJet> > GenJetToken_;
-
-  Quality_params = iConfig.getParameter<edm::ParameterSet>("TrackQualityPSet");
-  Quality_model = Quality(Quality_params);
     
   
   //-----------------------------------------------------------------------------------------------
@@ -295,6 +292,9 @@ L1TrackNtupleMaker::L1TrackNtupleMaker(edm::ParameterSet const& iConfig) : confi
   TrackingParticleToken_ = consumes<std::vector<TrackingParticle> >(TrackingParticleInputTag);
   TrackingVertexToken_ = consumes<std::vector<TrackingVertex> >(TrackingVertexInputTag);
   GenJetToken_ = consumes<std::vector<reco::GenJet> >(GenJetInputTag);
+
+  Quality_params = iConfig.getParameter<edm::ParameterSet>("TrackQualityPSet");
+  Quality_model = Quality(Quality_params);
 }
 
 /////////////
@@ -873,8 +873,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       }
 
       float tmp_trk_MVA1 = -999;
-      Quality_model.Prediction(iterL1Track);
-      tmp_trk_MVA1 = iterL1Track->trkMVA1();
+      tmp_trk_MVA1 = Quality_model.return_Prediction(&(*iterL1Track));
       
 
       float tmp_trk_chi2 = iterL1Track->chi2();
