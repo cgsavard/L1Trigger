@@ -265,10 +265,12 @@ void L1TrackMVAPlot(TString type,
   TGraph* TPR_vs_dt = new TGraph(n, dec_thresh.data(), TPR.data());
   TPR_vs_dt->SetName("TPR_vs_dt");
   TPR_vs_dt->SetTitle("TPR vs decision threshold; decision thresh.; TPR");
+  TPR_vs_dt->SetLineColor(1);
 
   TGraph* FPR_vs_dt = new TGraph(n, dec_thresh.data(), FPR.data());
   FPR_vs_dt->SetName("FPR_vs_dt");
   FPR_vs_dt->SetTitle("FPR vs decision threshold; decision thresh.; FPR");
+  FPR_vs_dt->SetLineColor(2);
 
   // -------------------------------------------------------------------------------------------
   // create TPR vs. eta and FPR vs. eta
@@ -459,10 +461,11 @@ void L1TrackMVAPlot(TString type,
 
   h_trk_MVA1_real->Draw();
   h_trk_MVA1_fake->Draw("same");
-  TLegend* leg = new TLegend();
-  leg->AddEntry(h_trk_MVA1_real,"real","l");
-  leg->AddEntry(h_trk_MVA1_fake,"fake","l");
-  leg->Draw("same");
+  h_trk_MVA1_fake->SetTitle("Performance vs. decision threshold; decision thresh.; performance measure");
+  TLegend* leg1 = new TLegend();
+  leg1->AddEntry(h_trk_MVA1_real,"real","l");
+  leg1->AddEntry(h_trk_MVA1_fake,"fake","l");
+  leg1->Draw("same");
   c.Write("trk_MVA1_rf");
 
   ROC->Draw("AL");
@@ -478,11 +481,20 @@ void L1TrackMVAPlot(TString type,
   ROC_had->Draw("AL");
   ROC_had->Write();
 
-  TPR_vs_dt->Draw("AL");
-  TPR_vs_dt->Write();
+  //TPR_vs_dt->Draw("AL");
+  //TPR_vs_dt->Write();
 
-  FPR_vs_dt->Draw("AL");
-  FPR_vs_dt->Write();
+  //FPR_vs_dt->Draw("AL");
+  //FPR_vs_dt->Write();
+
+  TPR_vs_dt->Draw();
+  FPR_vs_dt->Draw("same");
+  TPR_vs_dt->SetTitle("Performance vs. decision threshold; decision thresh.; performance measure");
+  TLegend* leg2 = new TLegend();
+  leg2->AddEntry(TPR_vs_dt,"TPR","l");
+  leg2->AddEntry(FPR_vs_dt,"FPR","l");
+  leg2->Draw("same");
+  c.Write("TPR_FPR_vs_dt");
 
   TPR_vs_eta->Draw("ap");
   TPR_vs_eta->Write();
