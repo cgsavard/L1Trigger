@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-TrackQualityParams = cms.PSet(Quality_Algorithm = cms.vstring(["Cut,NN,GBDT"]), #None, Cut, NN, GBDT
+TrackQualityParams = cms.PSet(Quality_Algorithm = cms.vstring(["Cut","NN","GBDT"]), #None, Cut, NN, GBDT
                               ONNXmodel = cms.vstring(["L1Trigger/TrackTrigger/ML_data/FakeIDNN/NN_model.onnx",
                                                        "L1Trigger/TrackTrigger/ML_data/FakeIDNN/GBDT_model.onnx"]),
                               ONNXInputName = cms.vstring(["input_1","feature_input"]),
