@@ -323,7 +323,7 @@ float Quality::return_Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack){
                 return ortoutputs[1][1];
             }
 
-            if (this->Algorithm_ == "None"){
+            else {
                 return -999;
             }
 
