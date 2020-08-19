@@ -206,27 +206,21 @@ void L1TrackMVAPlot(TString type,
   int n = 100; //num of entries on ROC curve
   for (int i=0; i<n; i++){
     float dt = (float)i/(n-1); //make sure it starts at (0,0) and ends at (1,1)
-    int TP = 0;
-    int TP_mu = 0;
-    int TP_el = 0;
-    int TP_had = 0;
-    int FP = 0;
-    int P = 0;
-    int P_mu = 0;
-    int P_el = 0;
-    int P_had = 0;
-    int N = 0;
+    float TP = 0, TP_mu = 0, TP_el = 0, TP_had = 0;
+    float FP = 0;
+    float P = 0, P_mu = 0, P_el = 0, P_had = 0;
+    float N = 0;
     for (int k=0; k<MVA1s.size(); k++){
       if (fakes.at(k)){
 	P++;
 	if (MVA1s.at(k)>dt) TP++;
-	if (abs(pdgids.at(k))==13){
+	if (abs(pdgids.at(k))==13){ //muons
 	  P_mu++;
 	  if (MVA1s.at(k)>dt) TP_mu++;
-	}else if (abs(pdgids.at(k))==11){
+	}else if (abs(pdgids.at(k))==11){ //electrons
 	  P_el++;
 	  if (MVA1s.at(k)>dt) TP_el++;
-	}else if (abs(pdgids.at(k))>37 && abs(pdgids.at(k))!=999){
+	}else if (abs(pdgids.at(k))>37 && abs(pdgids.at(k))!=999){ //hadrons
 	  P_had++;
 	  if (MVA1s.at(k)>dt) TP_had++;
 	}
@@ -235,7 +229,6 @@ void L1TrackMVAPlot(TString type,
 	if (MVA1s.at(k)>dt) FP++;
       }
     }
-    cout << P << " " << P_mu << endl;
     TPR.push_back((float)TP/P);
     TPR_mu.push_back((float)TP_mu/P_mu);
     TPR_el.push_back((float)TP_el/P_el);
@@ -245,7 +238,7 @@ void L1TrackMVAPlot(TString type,
   }
 
   // calculate AUC
-  float AUC, AUC_mu, AUC_el, AUC_had = 0.0;
+  float AUC = 0., AUC_mu = 0., AUC_el = 0., AUC_had = 0.;
   for (int i=0; i<n-1; i++){
     AUC += (TPR[i]+TPR[i+1])/2*(FPR[i]-FPR[i+1]);
     AUC_mu += (TPR_mu[i]+TPR_mu[i+1])/2*(FPR[i]-FPR[i+1]);
@@ -254,7 +247,7 @@ void L1TrackMVAPlot(TString type,
   }
 
   TGraph* ROC = new TGraph(n, FPR.data(), TPR.data());
-  ROC->SetName("ROC_MVA1");
+  ROC->SetName("ROC");
   ROC->SetTitle(("ROC curve (AUC = "+to_string(AUC)+"); FPR; TPR").c_str());  
 
   TGraph* ROC_mu = new TGraph(n, FPR.data(), TPR_mu.data());
@@ -270,21 +263,21 @@ void L1TrackMVAPlot(TString type,
   ROC_had->SetTitle(("ROC curve (hadrons, AUC = "+to_string(AUC_had)+"); FPR; TPR").c_str());
 
   TGraph* TPR_vs_dt = new TGraph(n, dec_thresh.data(), TPR.data());
-  TPR_vs_dt->SetName("TPR_vs_dt_MVA1");
+  TPR_vs_dt->SetName("TPR_vs_dt");
   TPR_vs_dt->SetTitle("TPR vs decision threshold; decision thresh.; TPR");
 
   TGraph* FPR_vs_dt = new TGraph(n, dec_thresh.data(), FPR.data());
-  FPR_vs_dt->SetName("FPR_vs_dt_MVA1");
+  FPR_vs_dt->SetName("FPR_vs_dt");
   FPR_vs_dt->SetTitle("FPR vs decision threshold; decision thresh.; FPR");
 
   // -------------------------------------------------------------------------------------------
   // create TPR vs. eta and FPR vs. eta
   // -------------------------------------------------------------------------------------------
 
-  vector<float> TPR_eta, TPR_eta_err;
+  vector<float> TPR_eta, TPR_eta_mu, TPR_eta_el, TPR_eta_had; 
+  vector<float> TPR_eta_err, TPR_eta_err_mu, TPR_eta_err_el, TPR_eta_err_had;
   vector<float> FPR_eta, FPR_eta_err;
-  vector<float> eta_range_TPR, eta_range_TPR_err;
-  vector<float> eta_range_FPR, eta_range_FPR_err;
+  vector<float> eta_range, eta_range_err;
   n = 20;
   float eta_low = -2.4;
   float eta_high = 2.4;
@@ -292,53 +285,86 @@ void L1TrackMVAPlot(TString type,
   float eta_step = (eta_high-eta_low)/n;
   float dt = .5;
   for (int ct=0; ct<n; ct++){
-    int TP = 0;
-    int FP = 0;
-    int P = 0;
-    int N = 0;
+    float TP = 0, TP_mu = 0, TP_el = 0, TP_had = 0;
+    float FP = 0;
+    float P = 0, P_mu = 0, P_el = 0, P_had = 0;
+    float N = 0;
     for (int k=0; k<etas.size(); k++){
       if (etas.at(k)>eta_temp && etas.at(k)<=(eta_temp+eta_step)){
 	if (fakes.at(k)){
 	  P++;
 	  if (MVA1s.at(k)>dt) TP++;
+	  if (abs(pdgids.at(k))==13){ //muons
+	    P_mu++;
+	    if (MVA1s.at(k)>dt) TP_mu++;
+	  }else if (abs(pdgids.at(k))==11){ //electrons
+	    P_el++;
+	    if (MVA1s.at(k)>dt) TP_el++;
+	  }else if (abs(pdgids.at(k))>37 && abs(pdgids.at(k))!=999){ //hadrons
+	    P_had++;
+	    if (MVA1s.at(k)>dt) TP_had++;
+	  }
 	}else{
 	  N++;
 	  if (MVA1s.at(k)>dt) FP++;
 	}
       }
     }
-    if (P>0){
-      TPR_eta.push_back((float)TP/P);
-      TPR_eta_err.push_back(sqrt(TP*(P-TP)/pow(P,3)));
-      eta_range_TPR.push_back(eta_temp+eta_step/2); //halfway in bin
-      eta_range_TPR_err.push_back(eta_step/2);
-    }if (N>0){
-      FPR_eta.push_back((float)FP/N);
-      FPR_eta_err.push_back(sqrt(FP*(N-FP)/pow(N,3)));
-      eta_range_FPR.push_back(eta_temp+eta_step/2); //halfway in bin
-      eta_range_FPR_err.push_back(eta_step/2);
-    }
+
+    //use min function to return 0 if no data filled
+    TPR_eta.push_back(min(TP/P,P));
+    TPR_eta_mu.push_back(min(TP_mu/P_mu,P_mu));
+    TPR_eta_el.push_back(min(TP_el/P_el,P_el));
+    TPR_eta_had.push_back(min(TP_had/P_had,P_had));
+    TPR_eta_err.push_back(min((float)sqrt(TP*(P-TP)/pow(P,3)),P));
+    TPR_eta_err_mu.push_back(min((float)sqrt(TP_mu*(P_mu-TP_mu)/pow(P_mu,3)),P_mu));
+    TPR_eta_err_el.push_back(min((float)sqrt(TP_mu*(P_el-TP_el)/pow(P_el,3)),P_el)); 
+    TPR_eta_err_had.push_back(min((float)sqrt(TP_had*(P_had-TP_had)/pow(P_had,3)),P_had)); 
+
+    FPR_eta.push_back(min(FP/N,N));
+    FPR_eta_err.push_back(min((float)sqrt(FP*(N-FP)/pow(N,3)),N)); 
+
+    //fill eta range
+    eta_range.push_back(eta_temp+eta_step/2);
+    eta_range_err.push_back(eta_step/2);
+
     eta_temp += eta_step;
   }
 
-  TGraphErrors* TPR_vs_eta = new TGraphErrors(TPR_eta.size(), eta_range_TPR.data(), TPR_eta.data(),
-  					      eta_range_TPR_err.data(), TPR_eta_err.data());
-  TPR_vs_eta->SetName("TPR_vs_eta_MVA1");
+  TGraphErrors* TPR_vs_eta = new TGraphErrors(n, eta_range.data(), TPR_eta.data(),
+  					      eta_range_err.data(), TPR_eta_err.data());
+  TPR_vs_eta->SetName("TPR_vs_eta");
   TPR_vs_eta->SetTitle("TPR vs. #eta; #eta; TPR");
 
-  TGraphErrors* FPR_vs_eta = new TGraphErrors(FPR_eta.size(), eta_range_FPR.data(), FPR_eta.data(),
-					      eta_range_FPR_err.data(), FPR_eta_err.data());
-  FPR_vs_eta->SetName("FPR_vs_eta_MVA1");
+  TGraphErrors* FPR_vs_eta = new TGraphErrors(n, eta_range.data(), FPR_eta.data(),
+					      eta_range_err.data(), FPR_eta_err.data());
+  FPR_vs_eta->SetName("FPR_vs_eta");
   FPR_vs_eta->SetTitle("FPR vs. #eta; #eta; FPR");
+
+  TGraphErrors* TPR_vs_eta_mu = new TGraphErrors(n, eta_range.data(), TPR_eta_mu.data(),
+					      eta_range_err.data(), TPR_eta_err_mu.data());
+  TPR_vs_eta_mu->SetName("TPR_vs_eta_mu");
+  TPR_vs_eta_mu->SetTitle("TPR vs. #eta (muons); #eta; TPR");
+
+  TGraphErrors* TPR_vs_eta_el = new TGraphErrors(n, eta_range.data(), TPR_eta_el.data(),
+						 eta_range_err.data(), TPR_eta_err_el.data());
+  TPR_vs_eta_el->SetName("TPR_vs_eta_el");
+  TPR_vs_eta_el->SetTitle("TPR vs. #eta (electrons); #eta; TPR");
+
+  TGraphErrors* TPR_vs_eta_had = new TGraphErrors(n, eta_range.data(), TPR_eta_had.data(),
+						  eta_range_err.data(), TPR_eta_err_had.data());
+  TPR_vs_eta_had->SetName("TPR_vs_eta_had");
+  TPR_vs_eta_had->SetTitle("TPR vs. #eta (hadrons); #eta; TPR");
+
 
   // -------------------------------------------------------------------------------------------
   // create TPR vs. pt and FPR vs. pt
   // -------------------------------------------------------------------------------------------
 
-  vector<float> TPR_pt, TPR_pt_err;
+  vector<float> TPR_pt, TPR_pt_mu, TPR_pt_el, TPR_pt_had;
+  vector<float> TPR_pt_err, TPR_pt_err_mu, TPR_pt_err_el, TPR_pt_err_had;
   vector<float> FPR_pt, FPR_pt_err;
-  vector<float> pt_range_TPR, pt_range_TPR_err;
-  vector<float> pt_range_FPR, pt_range_FPR_err;
+  vector<float> pt_range, pt_range_err;
   n = 10;
   float logpt_low = log10(2); //set low pt in log
   float logpt_high = log10(100); //set high pt in log
@@ -346,44 +372,76 @@ void L1TrackMVAPlot(TString type,
   float logpt_step = (logpt_high-logpt_low)/n;
   dt = .5;
   for (int ct=0; ct<n; ct++){
-    int TP = 0;
-    int FP = 0;
-    int P = 0;
-    int N = 0;
+    float TP = 0, TP_mu = 0, TP_el = 0, TP_had = 0;
+    float FP = 0;
+    float P = 0, P_mu = 0, P_el = 0, P_had = 0;
+    float N = 0;
     for (int k=0; k<pts.size(); k++){
       if (pts.at(k)>pow(10,logpt_temp) && pts.at(k)<=(pow(10,logpt_temp+logpt_step))){
 	if (fakes.at(k)){
 	  P++;
 	  if (MVA1s.at(k)>dt) TP++;
+	  if (abs(pdgids.at(k))==13){ //muons
+	    P_mu++;
+	    if (MVA1s.at(k)>dt) TP_mu++;
+	  }else if (abs(pdgids.at(k))==11){ //electrons
+	    P_el++;
+	    if (MVA1s.at(k)>dt) TP_el++;
+	  }else if (abs(pdgids.at(k))>37 && abs(pdgids.at(k))!=999){ //hadrons
+	    P_had++;
+	    if (MVA1s.at(k)>dt) TP_had++;
+	  }
 	}else{
 	  N++;
 	  if (MVA1s.at(k)>dt) FP++;
 	}
       }
-      }
-    if (P>0){
-      TPR_pt.push_back((float)TP/P);
-      TPR_pt_err.push_back(sqrt(TP*(P-TP)/pow(P,3)));
-      pt_range_TPR.push_back((pow(10,logpt_temp)+pow(10,logpt_temp+logpt_step))/2); //halfway in bin
-      pt_range_TPR_err.push_back((pow(10,logpt_temp+logpt_step)-pow(10,logpt_temp))/2);
-    }if (N>0){
-      FPR_pt.push_back((float)FP/N);
-      FPR_pt_err.push_back(sqrt(FP*(N-FP)/pow(N,3)));
-      pt_range_FPR.push_back((pow(10,logpt_temp)+pow(10,logpt_temp+logpt_step))/2); //halfway in bin
-      pt_range_FPR_err.push_back((pow(10,logpt_temp+logpt_step)-pow(10,logpt_temp))/2);
     }
+
+    //use min function to return 0 if no data filled  
+    TPR_pt.push_back(min(TP/P,P));
+    TPR_pt_mu.push_back(min(TP_mu/P_mu,P_mu));
+    TPR_pt_el.push_back(min(TP_el/P_el,P_el));
+    TPR_pt_had.push_back(min(TP_had/P_had,P_had));
+    TPR_pt_err.push_back(min((float)sqrt(TP*(P-TP)/pow(P,3)),P));
+    TPR_pt_err_mu.push_back(min((float)sqrt(TP_mu*(P_mu-TP_mu)/pow(P_mu,3)),P_mu));
+    TPR_pt_err_el.push_back(min((float)sqrt(TP_el*(P_el-TP_el)/pow(P_el,3)),P_el));
+    TPR_pt_err_had.push_back(min((float)sqrt(TP_had*(P_had-TP_had)/pow(P_had,3)),P_had));
+
+    FPR_pt.push_back(min(FP/N,N));
+    FPR_pt_err.push_back(min((float)sqrt(FP*(N-FP)/pow(N,3)),N));
+
+    //fill pt range
+    pt_range.push_back((pow(10,logpt_temp)+pow(10,logpt_temp+logpt_step))/2); //halfway in bin
+    pt_range_err.push_back((pow(10,logpt_temp+logpt_step)-pow(10,logpt_temp))/2);
+
     logpt_temp += logpt_step;
   }
 
-  TGraphErrors* TPR_vs_pt = new TGraphErrors(TPR_pt.size(), pt_range_TPR.data(), TPR_pt.data(),
-					     pt_range_TPR_err.data(), TPR_pt_err.data());
-  TPR_vs_pt->SetName("TPR_vs_pt_MVA1");
+  TGraphErrors* TPR_vs_pt = new TGraphErrors(n, pt_range.data(), TPR_pt.data(),
+					     pt_range_err.data(), TPR_pt_err.data());
+  TPR_vs_pt->SetName("TPR_vs_pt");
   TPR_vs_pt->SetTitle("TPR vs. p_{T}; p_{T}; TPR");
 
-  TGraphErrors* FPR_vs_pt = new TGraphErrors(FPR_pt.size(), pt_range_FPR.data(), FPR_pt.data(),
-					     pt_range_FPR_err.data(), FPR_pt_err.data());
-  FPR_vs_pt->SetName("FPR_vs_pt_MVA1");
+  TGraphErrors* FPR_vs_pt = new TGraphErrors(n, pt_range.data(), FPR_pt.data(),
+					     pt_range_err.data(), FPR_pt_err.data());
+  FPR_vs_pt->SetName("FPR_vs_pt");
   FPR_vs_pt->SetTitle("FPR vs. p_{T}; p_{T}; FPR");
+
+  TGraphErrors* TPR_vs_pt_mu = new TGraphErrors(n, pt_range.data(), TPR_pt_mu.data(),
+					     pt_range_err.data(), TPR_pt_err_mu.data());
+  TPR_vs_pt_mu->SetName("TPR_vs_pt_mu");
+  TPR_vs_pt_mu->SetTitle("TPR vs. p_{T} (muons); p_{T}; TPR");
+
+  TGraphErrors* TPR_vs_pt_el = new TGraphErrors(n, pt_range.data(), TPR_pt_el.data(),
+					     pt_range_err.data(), TPR_pt_err_el.data());
+  TPR_vs_pt_el->SetName("TPR_vs_pt_el");
+  TPR_vs_pt_el->SetTitle("TPR vs. p_{T} (electrons); p_{T}; TPR");
+
+  TGraphErrors* TPR_vs_pt_had = new TGraphErrors(n, pt_range.data(), TPR_pt_had.data(),
+					     pt_range_err.data(), TPR_pt_err_had.data());
+  TPR_vs_pt_had->SetName("TPR_vs_pt_had");
+  TPR_vs_pt_had->SetTitle("TPR vs. p_{T} (hadrons); p_{T}; TPR");
 
   // -------------------------------------------------------------------------------------------
   // output file for histograms and graphs
@@ -430,6 +488,15 @@ void L1TrackMVAPlot(TString type,
   TPR_vs_eta->Write();
   c.SaveAs("TPR_vs_eta.pdf");
 
+  TPR_vs_eta_mu->Draw("ap");
+  TPR_vs_eta_mu->Write();
+
+  TPR_vs_eta_el->Draw("ap");
+  TPR_vs_eta_el->Write();
+
+  TPR_vs_eta_had->Draw("ap");
+  TPR_vs_eta_had->Write();
+
   FPR_vs_eta->Draw("ap");
   FPR_vs_eta->Write();
   c.SaveAs("FPR_vs_eta.pdf");
@@ -437,6 +504,15 @@ void L1TrackMVAPlot(TString type,
   TPR_vs_pt->Draw("ap");
   TPR_vs_pt->Write();
   c.SaveAs("TPR_vs_eta.pdf");
+
+  TPR_vs_pt_mu->Draw("ap");
+  TPR_vs_pt_mu->Write();
+
+  TPR_vs_pt_el->Draw("ap");
+  TPR_vs_pt_el->Write();
+
+  TPR_vs_pt_had->Draw("ap");
+  TPR_vs_pt_had->Write();
 
   FPR_vs_pt->Draw("ap");
   FPR_vs_pt->Write();
