@@ -62,8 +62,6 @@ class Quality{
     // Passed by reference a track without MVA filled, fills the track's MVA field
     void Prediction(TTTrack <Ref_Phase2TrackerDigi_> &aTrack);
 
-    float return_Prediction(TTTrack <Ref_Phase2TrackerDigi_> &aTrack);
-    
     // To set private member data
     void Set_Cut_Parameters(std::string Algorithm,float maxZ0, float maxEta, float chi2dofMax, float bendchi2Max, 
 			    float minPt, int nStubmin);
