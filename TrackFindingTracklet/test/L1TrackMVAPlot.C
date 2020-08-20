@@ -1,6 +1,7 @@
 // ----------------------------------------------------------------------------------------------------------------
 // Basic example ROOT script for making tracking performance plots using the ntuples produced by L1TrackNtupleMaker.cc
 //
+// create "MVA_plots" directory before running
 // e.g. in ROOT do: .L L1TrackMVAPlot.C++, L1TrackMVAPlot("TTbar_PU200_D49")
 //
 // By Claire Savard, July 2020
@@ -473,6 +474,7 @@ void L1TrackMVAPlot(TString type,
 
   h_trk_MVA1->Draw();
   h_trk_MVA1->Write();
+  c.SaveAs("MVA_plots/trk_MVA.pdf");
 
   h_trk_MVA1_real->Draw();
   h_trk_MVA1_fake->Draw("same");
@@ -481,20 +483,24 @@ void L1TrackMVAPlot(TString type,
   leg1->AddEntry(h_trk_MVA1_real,"real","l");
   leg1->AddEntry(h_trk_MVA1_fake,"fake","l");
   leg1->Draw("same");
-  c.Write("trk_MVA1_rf");
+  c.Write("trk_MVA_rf");
+  c.SaveAs("MVA_plots/trk_MVA_rf.pdf");
 
   ROC->Draw("AL");
   ROC->Write();
-  c.SaveAs("ROC.pdf");
+  c.SaveAs("MVA_plots/ROC.pdf");
 
   ROC_mu->Draw("AL");
   ROC_mu->Write();
+  c.SaveAs("MVA_plots/ROC_mu.pdf");
 
   ROC_el->Draw("AL");
   ROC_el->Write();
+  c.SaveAs("MVA_plots/ROC_el.pdf");
 
   ROC_had->Draw("AL");
   ROC_had->Write();
+  c.SaveAs("MVA_plots/ROC_had.pdf");
 
   TPR_vs_dt->Draw();
   FPR_vs_dt->Draw("same");
@@ -504,6 +510,7 @@ void L1TrackMVAPlot(TString type,
   leg2->AddEntry(FPR_vs_dt,"FPR","l");
   leg2->Draw("same");
   c.Write("TPR_FPR_vs_dt");
+  c.SaveAs("MVA_plots/TPR_FPR_vs_dt.pdf");
 
   TPR_vs_dt_mu->Draw();
   FPR_vs_dt->Draw("same");
@@ -513,6 +520,7 @@ void L1TrackMVAPlot(TString type,
   leg3->AddEntry(FPR_vs_dt,"FPR","l");
   leg3->Draw("same");
   c.Write("TPR_FPR_vs_dt_mu");
+  c.SaveAs("MVA_plots/TPR_FPR_vs_dt_mu.pdf");
 
   TPR_vs_dt_el->Draw();
   FPR_vs_dt->Draw("same");
@@ -522,6 +530,7 @@ void L1TrackMVAPlot(TString type,
   leg4->AddEntry(FPR_vs_dt,"FPR","l");
   leg4->Draw("same");
   c.Write("TPR_FPR_vs_dt_el");
+  c.SaveAs("MVA_plots/TPR_FPR_vs_dt_el.pdf");
 
   TPR_vs_dt_had->Draw();
   FPR_vs_dt->Draw("same");
@@ -531,40 +540,47 @@ void L1TrackMVAPlot(TString type,
   leg5->AddEntry(FPR_vs_dt,"FPR","l");
   leg5->Draw("same");
   c.Write("TPR_FPR_vs_dt_had");
+  c.SaveAs("MVA_plots/TPR_FPR_vs_dt_had.pdf");
 
   TPR_vs_eta->Draw("ap");
   TPR_vs_eta->Write();
-  c.SaveAs("TPR_vs_eta.pdf");
+  c.SaveAs("MVA_plots/TPR_vs_eta.pdf");
 
   TPR_vs_eta_mu->Draw("ap");
   TPR_vs_eta_mu->Write();
+  c.SaveAs("MVA_plots/TPR_vs_eta_mu.pdf");
 
   TPR_vs_eta_el->Draw("ap");
   TPR_vs_eta_el->Write();
+  c.SaveAs("MVA_plots/TPR_vs_eta_el.pdf");
 
   TPR_vs_eta_had->Draw("ap");
   TPR_vs_eta_had->Write();
+  c.SaveAs("MVA_plots/TPR_vs_eta_had.pdf");
 
   FPR_vs_eta->Draw("ap");
   FPR_vs_eta->Write();
-  c.SaveAs("FPR_vs_eta.pdf");
+  c.SaveAs("MVA_plots/FPR_vs_eta.pdf");
 
   TPR_vs_pt->Draw("ap");
   TPR_vs_pt->Write();
-  c.SaveAs("TPR_vs_eta.pdf");
+  c.SaveAs("MVA_plots/TPR_vs_pt.pdf");
 
   TPR_vs_pt_mu->Draw("ap");
   TPR_vs_pt_mu->Write();
+  c.SaveAs("MVA_plots/TPR_vs_pt_mu.pdf");
 
   TPR_vs_pt_el->Draw("ap");
   TPR_vs_pt_el->Write();
+  c.SaveAs("MVA_plots/TPR_vs_pt_el.pdf");
 
   TPR_vs_pt_had->Draw("ap");
   TPR_vs_pt_had->Write();
+  c.SaveAs("MVA_plots/TPR_vs_pt_had.pdf");
 
   FPR_vs_pt->Draw("ap");
   FPR_vs_pt->Write();
-  c.SaveAs("FPR_vs_eta.pdf");
+  c.SaveAs("MVA_plots/FPR_vs_pt.pdf");
 
   fout->Close();
 }
