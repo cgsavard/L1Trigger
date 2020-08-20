@@ -272,6 +272,21 @@ void L1TrackMVAPlot(TString type,
   FPR_vs_dt->SetTitle("FPR vs decision threshold; decision thresh.; FPR");
   FPR_vs_dt->SetLineColor(2);
 
+  TGraph* TPR_vs_dt_mu = new TGraph(n, dec_thresh.data(), TPR_mu.data());
+  TPR_vs_dt_mu->SetName("TPR_vs_dt_mu");
+  TPR_vs_dt_mu->SetTitle("TPR vs decision threshold (muons); decision thresh.; TPR");
+  TPR_vs_dt_mu->SetLineColor(1);
+
+  TGraph* TPR_vs_dt_el = new TGraph(n, dec_thresh.data(), TPR_el.data());
+  TPR_vs_dt_el->SetName("TPR_vs_dt_el");
+  TPR_vs_dt_el->SetTitle("TPR vs decision threshold (electrons); decision thresh.; TPR");
+  TPR_vs_dt_el->SetLineColor(1);
+
+  TGraph* TPR_vs_dt_had = new TGraph(n, dec_thresh.data(), TPR_had.data());
+  TPR_vs_dt_had->SetName("TPR_vs_dt_had");
+  TPR_vs_dt_had->SetTitle("TPR vs decision threshold (hadrons); decision thresh.; TPR");
+  TPR_vs_dt_had->SetLineColor(1);
+
   // -------------------------------------------------------------------------------------------
   // create TPR vs. eta and FPR vs. eta
   // -------------------------------------------------------------------------------------------
@@ -481,12 +496,6 @@ void L1TrackMVAPlot(TString type,
   ROC_had->Draw("AL");
   ROC_had->Write();
 
-  //TPR_vs_dt->Draw("AL");
-  //TPR_vs_dt->Write();
-
-  //FPR_vs_dt->Draw("AL");
-  //FPR_vs_dt->Write();
-
   TPR_vs_dt->Draw();
   FPR_vs_dt->Draw("same");
   TPR_vs_dt->SetTitle("Performance vs. decision threshold; decision thresh.; performance measure");
@@ -495,6 +504,33 @@ void L1TrackMVAPlot(TString type,
   leg2->AddEntry(FPR_vs_dt,"FPR","l");
   leg2->Draw("same");
   c.Write("TPR_FPR_vs_dt");
+
+  TPR_vs_dt_mu->Draw();
+  FPR_vs_dt->Draw("same");
+  TPR_vs_dt_mu->SetTitle("Performance vs. decision threshold (muons); decision thresh.; performance measure");
+  TLegend* leg3 = new TLegend();
+  leg3->AddEntry(TPR_vs_dt_mu,"TPR","l");
+  leg3->AddEntry(FPR_vs_dt,"FPR","l");
+  leg3->Draw("same");
+  c.Write("TPR_FPR_vs_dt_mu");
+
+  TPR_vs_dt_el->Draw();
+  FPR_vs_dt->Draw("same");
+  TPR_vs_dt_el->SetTitle("Performance vs. decision threshold (electrons); decision thresh.; performance measure");
+  TLegend* leg4 = new TLegend();
+  leg4->AddEntry(TPR_vs_dt_el,"TPR","l");
+  leg4->AddEntry(FPR_vs_dt,"FPR","l");
+  leg4->Draw("same");
+  c.Write("TPR_FPR_vs_dt_el");
+
+  TPR_vs_dt_had->Draw();
+  FPR_vs_dt->Draw("same");
+  TPR_vs_dt_had->SetTitle("Performance vs. decision threshold (hadrons); decision thresh.; performance measure");
+  TLegend* leg5 = new TLegend();
+  leg5->AddEntry(TPR_vs_dt_had,"TPR","l");
+  leg5->AddEntry(FPR_vs_dt,"FPR","l");
+  leg5->Draw("same");
+  c.Write("TPR_FPR_vs_dt_had");
 
   TPR_vs_eta->Draw("ap");
   TPR_vs_eta->Write();
