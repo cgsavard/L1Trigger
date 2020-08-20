@@ -38,7 +38,6 @@
 <use name="TrackingTools/TrajectoryParametrization"/>
 <use name="TrackingTools/TrajectoryState"/>
 <use name="TrackingTools/TransientTrack"/>
-<use name="PhysicsTools/ONNXRuntime"/>
 
 <export>
   <lib   name="1"/>
