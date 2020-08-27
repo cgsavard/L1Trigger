@@ -86,11 +86,11 @@ using namespace edm;
 //                          //
 //////////////////////////////
 
-class L1TrackNtupleMaker : public edm::EDAnalyzer {
+class L1TrackNtupleMakerMVAVector : public edm::EDAnalyzer {
 public:
   // Constructor/destructor
-  explicit L1TrackNtupleMaker(const edm::ParameterSet& iConfig);
-  ~L1TrackNtupleMaker() override;
+  explicit L1TrackNtupleMakerMVAVector(const edm::ParameterSet& iConfig);
+  ~L1TrackNtupleMakerMVAVector() override;
 
   // Mandatory methods
   void beginJob() override;
@@ -258,7 +258,7 @@ private:
 
 //////////////
 // CONSTRUCTOR
-L1TrackNtupleMaker::L1TrackNtupleMaker(edm::ParameterSet const& iConfig) : config(iConfig) {
+L1TrackNtupleMakerMVAVector::L1TrackNtupleMakerMVAVector(edm::ParameterSet const& iConfig) : config(iConfig) {
   MyProcess = iConfig.getParameter<int>("MyProcess");
   DebugMode = iConfig.getParameter<bool>("DebugMode");
   SaveAllTracks = iConfig.getParameter<bool>("SaveAllTracks");
@@ -299,20 +299,20 @@ L1TrackNtupleMaker::L1TrackNtupleMaker(edm::ParameterSet const& iConfig) : confi
 
 /////////////
 // DESTRUCTOR
-L1TrackNtupleMaker::~L1TrackNtupleMaker() {}
+L1TrackNtupleMakerMVAVector::~L1TrackNtupleMakerMVAVector() {}
 
 //////////
 // END JOB
-void L1TrackNtupleMaker::endJob() {
+void L1TrackNtupleMakerMVAVector::endJob() {
   // things to be done at the exit of the event Loop
-  edm::LogVerbatim("Tracklet") << "L1TrackNtupleMaker::endJob";
+  edm::LogVerbatim("Tracklet") << "L1TrackNtupleMakerMVAVector::endJob";
 }
 
 ////////////
 // BEGIN JOB
-void L1TrackNtupleMaker::beginJob() {
+void L1TrackNtupleMakerMVAVector::beginJob() {
   // things to be done before entering the event Loop
-  edm::LogVerbatim("Tracklet") << "L1TrackNtupleMaker::beginJob";
+  edm::LogVerbatim("Tracklet") << "L1TrackNtupleMakerMVAVector::beginJob";
 
   //-----------------------------------------------------------------------------------------------
   // book histograms / make ntuple
@@ -527,7 +527,7 @@ void L1TrackNtupleMaker::beginJob() {
 
 //////////
 // ANALYZE
-void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+void L1TrackNtupleMakerMVAVector::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   if (not available_)
     return;  // No ROOT file open.
 
@@ -873,6 +873,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       }
 
       float tmp_trk_MVA1 = -999;
+      std::cout << tmp_trk_MVA1 << endl;
       tmp_trk_MVA1 = Quality_model.return_Prediction(*iterL1Track);
       
 
@@ -1508,4 +1509,4 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 
 ///////////////////////////
 // DEFINE THIS AS A PLUG-IN
-DEFINE_FWK_MODULE(L1TrackNtupleMaker);
+DEFINE_FWK_MODULE(L1TrackNtupleMakerMVAVector);

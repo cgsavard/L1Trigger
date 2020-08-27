@@ -87,9 +87,9 @@ process.Timing = cms.Service("Timing", summaryOnly = cms.untracked.bool(True))
 ############################################################
 
 # Load Quality params to change algorithm and model location
-process.load("L1Trigger.TrackTrigger.L1TrackClassifier_cfi")
-process.TrackQualityParams.Quality_Algorithm = cms.string("NN")
-process.TrackQualityParams.ONNXmodel = cms.string("../../TrackTrigger/ML_data/FakeIDNN/NN_model.onnx")
+#process.load("L1Trigger.TrackTrigger.L1TrackClassifier_cfi")
+#process.TrackQualityParams.Quality_Algorithm = cms.string("NN")
+#process.TrackQualityParams.ONNXmodel = cms.string("../../TrackTrigger/ML_data/FakeIDNN/NN_model.onnx")
 
 process.load("L1Trigger.TrackFindingTracklet.L1HybridEmulationTracks_cff")
 
