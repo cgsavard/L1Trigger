@@ -159,11 +159,13 @@ else:
 TrackQualityParams_1 = TrackQualityParams.clone(
                               Quality_Algorithm = cms.string("NN"), #None, Cut, NN, GBDT
                               ONNXmodel = cms.string("../../TrackTrigger/ML_data/FakeIDNN/NN_model.onnx"),
+                              ONNXInputName = cms.string("input_1")
                               )
 
 TrackQualityParams_2 = TrackQualityParams.clone(
                               Quality_Algorithm = cms.string("GBDT"), #None, Cut, NN, GBDT
                               ONNXmodel = cms.string("../../TrackTrigger/ML_data/FakeIDGBDT/GBDT_model.onnx"),
+                              ONNXInputName = cms.string("feature_input")
                               )
 
 
