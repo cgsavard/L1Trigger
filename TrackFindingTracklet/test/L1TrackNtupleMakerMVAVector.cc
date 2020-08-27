@@ -119,6 +119,7 @@ private:
 
   edm::ParameterSet Quality_params;
   Quality Quality_model;
+  int NQualities;
 
   edm::InputTag L1TrackInputTag;       // L1 track collection
   edm::InputTag MCTruthTrackInputTag;  // MC truth collection
@@ -171,7 +172,7 @@ private:
   std::vector<int>* m_trk_unknown;
   std::vector<int>* m_trk_combinatoric;
   std::vector<int>* m_trk_fake;  //0 fake, 1 track from primary interaction, 2 secondary track
-  std::vector<float>* m_trk_MVA1;
+  std::vector<std::vector<float>>* m_trk_MVA;
   std::vector<int>* m_trk_matchtp_pdgid;
   std::vector<float>* m_trk_matchtp_pt;
   std::vector<float>* m_trk_matchtp_eta;
@@ -294,6 +295,7 @@ L1TrackNtupleMakerMVAVector::L1TrackNtupleMakerMVAVector(edm::ParameterSet const
   GenJetToken_ = consumes<std::vector<reco::GenJet> >(GenJetInputTag);
 
   Quality_params = iConfig.getParameter<edm::ParameterSet>("TrackQualityPSet");
+  NQualities = iConfig.getParameter<bool>("NQualities");
   Quality_model = Quality(Quality_params);
 }
 
@@ -342,7 +344,7 @@ void L1TrackNtupleMakerMVAVector::beginJob() {
   m_trk_unknown = new std::vector<int>;
   m_trk_combinatoric = new std::vector<int>;
   m_trk_fake = new std::vector<int>;
-  m_trk_MVA1 = new std::vector<float>;
+  m_trk_MVA = new std::vector<std::vector<float>>;
   m_trk_matchtp_pdgid = new std::vector<int>;
   m_trk_matchtp_pt = new std::vector<float>;
   m_trk_matchtp_eta = new std::vector<float>;
@@ -450,7 +452,17 @@ void L1TrackNtupleMakerMVAVector::beginJob() {
       eventTree->Branch("trk_injet_vhighpt", &m_trk_injet_vhighpt);
     }
 
-    eventTree->Branch("trk_MVA1", &m_trk_MVA1);
+
+    for (int i=0; i<NQualities; i++){
+      std::string s = std::to_string(i);
+      char const *pchar = s.c_str();
+        
+        //std::string branch_name = "trk_MVA" + std::to_string(i);
+        //mva_branch_names.push_back(branch_name);
+      eventTree->Branch(pchar, (&m_trk_MVA)[i]);
+      }
+        
+    
     
   }
 
@@ -565,7 +577,7 @@ void L1TrackNtupleMakerMVAVector::analyze(const edm::Event& iEvent, const edm::E
     m_trk_unknown->clear();
     m_trk_combinatoric->clear();
     m_trk_fake->clear();
-    m_trk_MVA1->clear();
+    m_trk_MVA->clear();
     m_trk_matchtp_pdgid->clear();
     m_trk_matchtp_pt->clear();
     m_trk_matchtp_eta->clear();
@@ -872,9 +884,10 @@ void L1TrackNtupleMakerMVAVector::analyze(const edm::Event& iEvent, const edm::E
         tmp_trk_d0 = -tmp_trk_x0 * sin(tmp_trk_phi) + tmp_trk_y0 * cos(tmp_trk_phi);
       }
 
-      float tmp_trk_MVA1 = -999;
-      std::cout << tmp_trk_MVA1 << endl;
-      tmp_trk_MVA1 = Quality_model.return_Prediction(*iterL1Track);
+      std::vector<float> tmp_trk_MVA;
+      for (int i=0; i<NQualities; i++){
+        tmp_trk_MVA.pushback(Quality_model.return_Prediction(*iterL1Track));
+      }
       
 
       float tmp_trk_chi2 = iterL1Track->chi2();
@@ -967,7 +980,11 @@ void L1TrackNtupleMakerMVAVector::analyze(const edm::Event& iEvent, const edm::E
       m_trk_z0->push_back(tmp_trk_z0);
       if (L1Tk_nPar == 5) m_trk_d0->push_back(tmp_trk_d0);
       else m_trk_d0->push_back(999.);
-      m_trk_MVA1->push_back(tmp_trk_MVA1);
+
+
+      for (int i=0; i<NQualities; i++){
+        m_trk_MVA->push_back(tmp_trk_MVA[i]);
+      }
       m_trk_chi2->push_back(tmp_trk_chi2);
       m_trk_chi2rphi->push_back(tmp_trk_chi2rphi);
       m_trk_chi2rz->push_back(tmp_trk_chi2rz);
