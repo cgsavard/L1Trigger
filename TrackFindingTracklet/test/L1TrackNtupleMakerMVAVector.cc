@@ -300,8 +300,7 @@ L1TrackNtupleMakerMVAVector::L1TrackNtupleMakerMVAVector(edm::ParameterSet const
     std::string PSSet = "TrackQualityPSet_";
     PSSet = PSSet + std::to_string(i);
     Quality_params = iConfig.getParameter<edm::ParameterSet>(PSSet);
-  
-    Quality_models.pushback( Quality(Quality_params));
+    Quality_models.push_back( Quality(Quality_params));
 
   }
 
