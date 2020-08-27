@@ -155,6 +155,12 @@ else:
 #      all TPs = 1
 ############################################################
 
+
+TrackQualityParams_2 = TrackQualityParams.clone((Quality_Algorithm = cms.string("NN"), #None, Cut, NN, GBDT
+                              ONNXmodel = cms.string("../../TrackTrigger/ML_data/FakeIDNN/NN_model.onnx"),
+                              )
+
+
 process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMakerMVAVector',
                                        MyProcess = cms.int32(1),
                                        DebugMode = cms.bool(False),      # printout lots of debug statements
@@ -179,7 +185,9 @@ process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMakerMVAVector',
                                        TrackingInJets = cms.bool(False),
                                        GenJetInputTag = cms.InputTag("ak4GenJets", ""),
                                        # Was track quality performed?
-                                       TrackQualityPSet = cms.PSet(TrackQualityParams)
+                                       TrackQualityPSet_1 = cms.PSet(TrackQualityParams),
+                                       TrackQualityPSet_2 = cms.PSet(TrackQualityParams_2),
+                                       NQualities = cms.int32(2)
                                        )
 
 process.ana = cms.Path(process.L1TrackNtuple)

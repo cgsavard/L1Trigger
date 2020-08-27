@@ -118,7 +118,7 @@ private:
   bool TrackingInJets;  // do tracking in jets?
 
   edm::ParameterSet Quality_params;
-  Quality Quality_model;
+  std::vector<Quality> Quality_models;
   int NQualities;
 
   edm::InputTag L1TrackInputTag;       // L1 track collection
@@ -294,9 +294,18 @@ L1TrackNtupleMakerMVAVector::L1TrackNtupleMakerMVAVector(edm::ParameterSet const
   TrackingVertexToken_ = consumes<std::vector<TrackingVertex> >(TrackingVertexInputTag);
   GenJetToken_ = consumes<std::vector<reco::GenJet> >(GenJetInputTag);
 
-  Quality_params = iConfig.getParameter<edm::ParameterSet>("TrackQualityPSet");
-  NQualities = iConfig.getParameter<bool>("NQualities");
-  Quality_model = Quality(Quality_params);
+  NQualities = iConfig.getParameter<int>("NQualities");
+
+  for (int i=0;i<NQualities;++i){
+    std::string PSSet = "TrackQualityPSet_";
+    PSSet = PSSet + std::to_string(i);
+    Quality_params = iConfig.getParameter<edm::ParameterSet>(PSSet);
+  
+    Quality_models.pushback( Quality(Quality_params));
+
+  }
+
+  
 }
 
 /////////////
@@ -452,15 +461,8 @@ void L1TrackNtupleMakerMVAVector::beginJob() {
       eventTree->Branch("trk_injet_vhighpt", &m_trk_injet_vhighpt);
     }
 
-
-    for (int i=0; i<NQualities; i++){
-      std::string s = std::to_string(i);
-      char const *pchar = s.c_str();
-        
-        //std::string branch_name = "trk_MVA" + std::to_string(i);
-        //mva_branch_names.push_back(branch_name);
-      eventTree->Branch(pchar, (&m_trk_MVA)[i]);
-      }
+    eventTree->Branch("MVA", &m_trk_MVA);
+      
         
     
     
@@ -886,7 +888,7 @@ void L1TrackNtupleMakerMVAVector::analyze(const edm::Event& iEvent, const edm::E
 
       std::vector<float> tmp_trk_MVA;
       for (int i=0; i<NQualities; i++){
-        tmp_trk_MVA.pushback(Quality_model.return_Prediction(*iterL1Track));
+        tmp_trk_MVA.push_back(Quality_models[i].return_Prediction(*iterL1Track));
       }
       
 
@@ -982,9 +984,9 @@ void L1TrackNtupleMakerMVAVector::analyze(const edm::Event& iEvent, const edm::E
       else m_trk_d0->push_back(999.);
 
 
-      for (int i=0; i<NQualities; i++){
-        m_trk_MVA->push_back(tmp_trk_MVA[i]);
-      }
+      //for (int i=0; i<NQualities; i++){
+        m_trk_MVA->push_back(tmp_trk_MVA);
+      //}
       m_trk_chi2->push_back(tmp_trk_chi2);
       m_trk_chi2rphi->push_back(tmp_trk_chi2rphi);
       m_trk_chi2rz->push_back(tmp_trk_chi2rz);
