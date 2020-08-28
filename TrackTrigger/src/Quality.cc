@@ -52,10 +52,9 @@ Quality::Quality(edm::ParameterSet Params){
 
         
         
-        
-        cms::Ort::ONNXRuntime Runtime(this->ONNXmodel_); //Setup ONNX runtime
+        //Setup ONNX runtime
 
-        Runtime_pointer = std::make_unique(Runtime);
+        Runtime_pointer = std::make_unique(Runtime(this->ONNXmodel_));
 
 	    
 	    
