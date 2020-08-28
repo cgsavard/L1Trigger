@@ -49,6 +49,14 @@ Quality::Quality(edm::ParameterSet Params){
                        Params.getParameter<string>("ONNXmodel"),
                        Params.getParameter<string>("ONNXInputName"),
                        Params.getParameter<vector<string>>("in_features")); 
+
+        
+        
+        
+        cms::Ort::ONNXRuntime Runtime(this->ONNXmodel_); //Setup ONNX runtime
+
+	    
+	    
     }
 
 }
@@ -218,17 +226,16 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
     }
 
     else {
-            // Setup ONNX input and output names and arrays
-            vector<string> ortinput_names;
-            vector<string> ortoutput_names;
             cms::Ort::FloatArrays ortinput;
             cms::Ort::FloatArrays ortoutputs;
 
-            vector<float> Transformed_features = Feature_Transform(aTrack,this->in_features_);
-            cms::Ort::ONNXRuntime Runtime(this->ONNXmodel_); //Setup ONNX runtime
+            vector<string> ortinput_names;
+            ortinput_names.push_back(this->ONNXInputName_);
 
-	    ortinput_names.push_back(this->ONNXInputName_);
-	    ortoutput_names = Runtime.getOutputNames();
+            vector<string> ortoutput_names;
+            ortoutput_names = Runtime.getOutputNames();
+            // Setup ONNX input and output names and arrays
+            vector<float> Transformed_features = Feature_Transform(aTrack,this->in_features_);
 
             //ONNX runtime recieves a vector of vectors of floats so push back the input
             // vector of float to create a 1,1,21 ortinput
