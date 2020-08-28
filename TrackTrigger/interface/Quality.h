@@ -84,6 +84,7 @@ class Quality{
     float bendchi2Max_ = 2.4;
     float minPt_ = 2.0;
     int nStubsmin_ = 4;
+    cms::Ort::ONNXRuntime Runtime;
     
   };
 #endif
