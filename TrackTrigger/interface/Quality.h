@@ -32,7 +32,7 @@ C.Brown 28/07/20
 class Quality{
   public:
     //Default Constructor
-    Quality() = delete;
+    Quality() {};
 
     Quality(edm::ParameterSet Params);
 
@@ -56,7 +56,7 @@ class Quality{
     std::string ONNXmodel_ = "None";
     std::string ONNXInputName_;
     std::vector<std::string> in_features_;
-    cms::Ort::ONNXRuntime Runtime("None");
+    cms::Ort::ONNXRuntime Runtime(model_path=ONNXmodel_);
     
   };
 #endif
