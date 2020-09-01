@@ -56,7 +56,7 @@ class Quality{
     std::string ONNXmodel_ = "None";
     std::string ONNXInputName_;
     std::vector<std::string> in_features_;
-    cms::Ort::ONNXRuntime Runtime(ONNXmodel_);
+    cms::Ort::ONNXRuntime Runtime("None");
     
   };
 #endif

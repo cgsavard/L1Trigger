@@ -24,8 +24,7 @@ Quality::Quality(edm::ParameterSet Params){
         
         
     //Setup ONNX runtime
-    cms::Ort::ONNXRuntime Runtime(this->ONNXmodel_);
-        Runtime_pointer = std::make_unique<cms::Ort::ONNXRuntime>(Runtime);
+    this->Runtime(this->ONNXmodel_);
 
 	    
 	    
@@ -191,7 +190,7 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
     // batch_size 1 as only one set of transformed features is being processed
     int batch_size = 1;
     // Run classification on a batch of 1
-    ortoutputs = (*Runtime_pointer).run(ortinput_names,ortinput,ortoutput_names,batch_size); 
+    ortoutputs = this->Runtime.run(ortinput_names,ortinput,ortoutput_names,batch_size); 
     // access first value of nested vector
     if (this->Algorithm_ == "NN"){
         aTrack.settrkMVA1(ortoutputs[0][0]);
