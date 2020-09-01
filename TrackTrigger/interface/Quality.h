@@ -32,23 +32,7 @@ C.Brown 28/07/20
 class Quality{
   public:
     //Default Constructor
-    Quality();
-
-    //Overloaded Constructors depending on how the Quality class is being initiated
-    Quality(std::string Algorithm,
-            std::string ONNXmodel,
-            std::string ONNXInputName,
-            std::vector<std::string> in_features
-            );
-
-    Quality(std::string Algorithm,
-            float maxZ0,
-            float maxEta, 
-            float chi2dofMax,
-            float bendchi2Max,
-            float minPt,
-            int nStubsmin
-            );
+    Quality() = delete;
 
     Quality(edm::ParameterSet Params);
 
@@ -62,29 +46,17 @@ class Quality{
     // Passed by reference a track without MVA filled, fills the track's MVA field
     void Prediction(TTTrack <Ref_Phase2TrackerDigi_> &aTrack);
 
-    // To set private member data
-    void Set_Cut_Parameters(std::string Algorithm,float maxZ0, float maxEta, float chi2dofMax, float bendchi2Max, 
-			    float minPt, int nStubmin);
-
     void Set_ONNX_Model(std::string Algorithm, std::string ONNXmodel, std::string ONNXInputName,
 			std::vector<std::string> in_features);
-
-
 
 
   private:
     // Private Memember Data
     std::string Algorithm_ = "None";
-    std::string ONNXmodel_;
+    std::string ONNXmodel_ = "None";
     std::string ONNXInputName_;
     std::vector<std::string> in_features_;
-    float maxZ0_ = 15;
-    float maxEta_ = 2.4; 
-    float chi2dofMax_ = 40;
-    float bendchi2Max_ = 2.4;
-    float minPt_ = 2.0;
-    int nStubsmin_ = 4;
-    std::unique_ptr<cms::Ort::ONNXRuntime> Runtime_pointer(nullptr);
+    cms::Ort::ONNXRuntime Runtime(ONNXmodel_);
     
   };
 #endif

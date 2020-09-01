@@ -10,57 +10,26 @@ using namespace std;
 
 //Constructors
 
-Quality::Quality() {}
-
-Quality::Quality(string Algorithm,
-                 string ONNXmodel,
-                 string ONNXInputName,
-                 vector<string> in_features) {    
-                    Set_ONNX_Model(Algorithm,ONNXmodel,ONNXInputName,in_features);
-                }
-
-
-
-Quality::Quality(string Algorithm,
-                 float maxZ0,
-                 float maxEta, 
-                 float chi2dofMax,
-                 float bendchi2Max,
-                 float minPt,
-                 int nStubsmin) {
-                   Set_Cut_Parameters(Algorithm,maxZ0,maxEta,chi2dofMax,bendchi2Max,minPt,nStubsmin);   
-                }
 
 Quality::Quality(edm::ParameterSet Params){
     string Algorithm = Params.getParameter<string>("Quality_Algorithm");
     // Unpacks EDM parameter set itself to save unecessary processing within TrackProducers
-    if (Algorithm == "Cut"){
-        Set_Cut_Parameters(Algorithm,
-                           (float)Params.getParameter<double>("maxZ0"),
-                           (float)Params.getParameter<double>("maxEta"),
-                           (float)Params.getParameter<double>("chi2dofMax"),
-                           (float)Params.getParameter<double>("bendchi2Max"),
-                           (float)Params.getParameter<double>("minPt"),
-                           Params.getParameter<int>("nStubsmin")); 
-    }
-
-    else {
-        Set_ONNX_Model(Algorithm,
-                       Params.getParameter<string>("ONNXmodel"),
-                       Params.getParameter<string>("ONNXInputName"),
-                       Params.getParameter<vector<string>>("in_features")); 
+    
+    
+    Set_ONNX_Model(Algorithm,
+                   Params.getParameter<string>("ONNXmodel"),
+                   Params.getParameter<string>("ONNXInputName"),
+                   Params.getParameter<vector<string>>("in_features")); 
 
         
         
-        //Setup ONNX runtime
-
-        Runtime_pointer = std::make_unique(Runtime(this->ONNXmodel_));
+    //Setup ONNX runtime
+    cms::Ort::ONNXRuntime Runtime(this->ONNXmodel_);
+        Runtime_pointer = std::make_unique<cms::Ort::ONNXRuntime>(Runtime);
 
 	    
 	    
     }
-
-}
 
  
 vector<float> Quality::Feature_Transform(TTTrack < Ref_Phase2TrackerDigi_ > aTrack, std::vector<std::string> in_features) {
@@ -203,84 +172,45 @@ vector<float> Quality::Feature_Transform(TTTrack < Ref_Phase2TrackerDigi_ > aTra
 
     
 void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
-    if (this->Algorithm_ == "Cut"){
-        // Get Track parameters
-        float trk_pt = aTrack.momentum().perp();
-        float trk_bend_chi2 = aTrack.stubPtConsistency();
-        float trk_z0 = aTrack.z0();
-        float trk_eta = aTrack.momentum().eta();
-        float trk_chi2 = aTrack.chi2();
-        const auto& stubRefs = aTrack.getStubRefs();
-        int nStubs = stubRefs.size();
+   
+    cms::Ort::FloatArrays ortinput;
+    cms::Ort::FloatArrays ortoutputs;
 
-        float classification = 0.0; // Default classification is 0
+    vector<string> ortinput_names;
+    ortinput_names.push_back(this->ONNXInputName_);
 
-        if (trk_pt >= this->minPt_ && 
-            abs(trk_z0) < this->maxZ0_ && 
-            abs(trk_eta) < this->maxEta_ && 
-            trk_chi2 < this->chi2dofMax_ && 
-            trk_bend_chi2 < this->bendchi2Max_ && 
-            nStubs >= this->nStubsmin_) classification = 1.0;
-            // Classification updated to 1 if conditions are met
+    vector<string> ortoutput_names;
+    ortoutput_names = (*Runtime_pointer).getOutputNames();
+    // Setup ONNX input and output names and arrays
+    vector<float> Transformed_features = Feature_Transform(aTrack,this->in_features_);
 
-        aTrack.settrkMVA1(classification);
+    //ONNX runtime recieves a vector of vectors of floats so push back the input
+    // vector of float to create a 1,1,21 ortinput
+    ortinput.push_back(Transformed_features);
+
+    // batch_size 1 as only one set of transformed features is being processed
+    int batch_size = 1;
+    // Run classification on a batch of 1
+    ortoutputs = (*Runtime_pointer).run(ortinput_names,ortinput,ortoutput_names,batch_size); 
+    // access first value of nested vector
+    if (this->Algorithm_ == "NN"){
+        aTrack.settrkMVA1(ortoutputs[0][0]);
     }
 
-    else {
-            cms::Ort::FloatArrays ortinput;
-            cms::Ort::FloatArrays ortoutputs;
-
-            vector<string> ortinput_names;
-            ortinput_names.push_back(this->ONNXInputName_);
-
-            vector<string> ortoutput_names;
-            ortoutput_names = (*Runtime_pointer).getOutputNames();
-            // Setup ONNX input and output names and arrays
-            vector<float> Transformed_features = Feature_Transform(aTrack,this->in_features_);
-
-            //ONNX runtime recieves a vector of vectors of floats so push back the input
-            // vector of float to create a 1,1,21 ortinput
-            ortinput.push_back(Transformed_features);
-
-            // batch_size 1 as only one set of transformed features is being processed
-            int batch_size = 1;
-            // Run classification on a batch of 1
-            ortoutputs = (*Runtime_pointer).run(ortinput_names,ortinput,ortoutput_names,batch_size); 
-            // access first value of nested vector
-            if (this->Algorithm_ == "NN"){
-                aTrack.settrkMVA1(ortoutputs[0][0]);
-            }
-
-            // The ortoutput_names vector for the GBDT is left blank due to issues returning the correct
-            // output, instead the GBDT will fill the ortoutputs with both the class prediciton and the class 
-            // probabilities. 
-            //ortoutputs[0][0] = class prediction based on a 0.5 threshold
-            //ortoutputs[1][0] = negative class probability
-            //ortoutputs[1][1] = positive class probability
+    // The ortoutput_names vector for the GBDT is left blank due to issues returning the correct
+    // output, instead the GBDT will fill the ortoutputs with both the class prediciton and the class 
+    // probabilities. 
+    //ortoutputs[0][0] = class prediction based on a 0.5 threshold
+    //ortoutputs[1][0] = negative class probability
+    //ortoutputs[1][1] = positive class probability
             
-            if (this->Algorithm_ == "GBDT"){
-                aTrack.settrkMVA1(ortoutputs[1][1]);
-            }
-
-            if (this->Algorithm_ == "None"){
-                aTrack.settrkMVA1(-999);
-            }
-
+    if (this->Algorithm_ == "GBDT"){
+        aTrack.settrkMVA1(ortoutputs[1][1]);
     }
-}
-
-
-void Quality::Set_Cut_Parameters(string Algorithm,float maxZ0, float maxEta, float chi2dofMax,float bendchi2Max, float minPt, int nStubmin) {
-
-    Algorithm_ = Algorithm;
-    maxZ0_ = maxZ0;
-    maxEta_ = maxEta; 
-    chi2dofMax_ = chi2dofMax;
-    bendchi2Max_ = bendchi2Max;
-    minPt_ = minPt;
-    nStubsmin_ = nStubmin;
 
 }
+
+
 
 void Quality::Set_ONNX_Model(string Algorithm,string ONNXmodel,string ONNXInputName,vector<string> in_features) {
 
