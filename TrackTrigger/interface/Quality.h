@@ -84,7 +84,7 @@ class Quality{
     float bendchi2Max_ = 2.4;
     float minPt_ = 2.0;
     int nStubsmin_ = 4;
-    std::unique_ptr<cms::Ort::ONNXRuntime> Runtime_pointer;
+    std::unique_ptr<cms::Ort::ONNXRuntime> Runtime_pointer(nullptr);
     
   };
 #endif
