@@ -44,7 +44,7 @@ class Quality{
 					                               std::vector<std::string> in_features);
     
     // Passed by reference a track without MVA filled, fills the track's MVA field
-    void Prediction(TTTrack <Ref_Phase2TrackerDigi_> &aTrack);
+    void Prediction(TTTrack <Ref_Phase2TrackerDigi_> &aTrack,cms::Ort::ONNXRuntime Runtime);
 
     void Set_ONNX_Model(std::string Algorithm, std::string ONNXmodel, std::string ONNXInputName,
 			std::vector<std::string> in_features);
@@ -56,7 +56,7 @@ class Quality{
     std::string ONNXmodel_ = "None";
     std::string ONNXInputName_;
     std::vector<std::string> in_features_;
-    cms::Ort::ONNXRuntime Runtime(model_path=ONNXmodel_);
+    auto ONNX_runtime;
     
   };
 #endif

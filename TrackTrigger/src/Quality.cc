@@ -24,7 +24,7 @@ Quality::Quality(edm::ParameterSet Params){
         
         
     //Setup ONNX runtime
-    this->Runtime(this->ONNXmodel_);
+    ONNX_runtime = cms::Ort::ONNXRuntime Runtime(this->ONNXmodel_);
 
 	    
 	    
@@ -179,7 +179,7 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
     ortinput_names.push_back(this->ONNXInputName_);
 
     vector<string> ortoutput_names;
-    ortoutput_names = (*Runtime_pointer).getOutputNames();
+    ortoutput_names = this->ONNX_runtime.getOutputNames();
     // Setup ONNX input and output names and arrays
     vector<float> Transformed_features = Feature_Transform(aTrack,this->in_features_);
 
@@ -190,7 +190,7 @@ void Quality::Prediction(TTTrack < Ref_Phase2TrackerDigi_ > &aTrack) {
     // batch_size 1 as only one set of transformed features is being processed
     int batch_size = 1;
     // Run classification on a batch of 1
-    ortoutputs = this->Runtime.run(ortinput_names,ortinput,ortoutput_names,batch_size); 
+    ortoutputs = this->ONNX_runtime.run(ortinput_names,ortinput,ortoutput_names,batch_size); 
     // access first value of nested vector
     if (this->Algorithm_ == "NN"){
         aTrack.settrkMVA1(ortoutputs[0][0]);
