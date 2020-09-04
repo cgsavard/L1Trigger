@@ -36,6 +36,10 @@ class Quality{
 
     Quality(edm::ParameterSet Params);
 
+    std::unique_ptr<ONNXRuntime> DeepDoubleXONNXJetTagsProducer::initializeGlobalCache(const edm::ParameterSet& iConfig) {
+  return std::make_unique<ONNXRuntime>(iConfig.getParameter<edm::FileInPath>("model_path").fullPath());
+}
+
     //Default Destructor
     ~Quality() = default;
     
